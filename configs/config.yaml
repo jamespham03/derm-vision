@@ -1,0 +1,43 @@
+# Derm-Vision Configuration
+# ISIC 2019 Skin Lesion Classification
+
+data:
+  image_size: 224
+  num_classes: 8
+  class_names:
+    - MEL    # Melanoma
+    - NV     # Melanocytic nevus
+    - BCC    # Basal cell carcinoma
+    - AKIEC  # Actinic keratosis / Bowen's disease
+    - BKL    # Benign keratosis
+    - DF     # Dermatofibroma
+    - VASC   # Vascular lesion
+    - SCC    # Squamous cell carcinoma
+  data_dir: data/raw
+  metadata_csv: data/raw/ISIC_2019_Training_Metadata.csv
+  splits_dir: data/splits
+
+training:
+  batch_size: 32
+  learning_rate: 0.0001
+  weight_decay: 0.00001
+  epochs: 50
+  num_workers: 4
+  early_stopping_patience: 7
+  scheduler: cosine
+
+model:
+  backbone: efficientnet-b3
+  pretrained: true
+  dropout: 0.3
+  freeze_layers: true
+  unfreeze_epoch: 5
+
+wandb:
+  project: derm-vision
+  entity: null
+  log_interval: 10
+
+output:
+  checkpoint_dir: outputs/checkpoints
+  results_dir: outputs/results

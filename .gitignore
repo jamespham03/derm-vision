@@ -1,3 +1,19 @@
+# Data (large files - download separately)
+data/raw/
+data/processed/
+
+# Model checkpoints
+outputs/checkpoints/
+*.pth
+*.pt
+
+# W&B
+wandb/
+
+# OS
+.DS_Store
+Thumbs.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
