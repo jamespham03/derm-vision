@@ -1,0 +1,34 @@
+{
+  "0": {
+    "abbrev": "MEL",
+    "name": "Melanoma"
+  },
+  "1": {
+    "abbrev": "NV",
+    "name": "Melanocytic Nevi"
+  },
+  "2": {
+    "abbrev": "BCC",
+    "name": "Basal Cell Carcinoma"
+  },
+  "3": {
+    "abbrev": "AK",
+    "name": "Actinic Keratoses"
+  },
+  "4": {
+    "abbrev": "BKL",
+    "name": "Benign Keratosis"
+  },
+  "5": {
+    "abbrev": "DF",
+    "name": "Dermatofibroma"
+  },
+  "6": {
+    "abbrev": "VASC",
+    "name": "Vascular Lesions"
+  },
+  "7": {
+    "abbrev": "SCC",
+    "name": "Squamous Cell Carcinoma"
+  }
+}
