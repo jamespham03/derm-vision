@@ -13,7 +13,7 @@ data:
     - DF     # Dermatofibroma
     - VASC   # Vascular lesion
     - SCC    # Squamous cell carcinoma
-  data_dir: data/raw
+  data_dir: data/raw/ISIC_2019_Training_Input/ISIC_2019_Training_Input
   metadata_csv: data/raw/ISIC_2019_Training_Metadata.csv
   splits_dir: data/splits
 

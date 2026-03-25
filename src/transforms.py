@@ -33,14 +33,14 @@ def get_train_transforms(image_size: int = 224) -> A.Compose:
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.5),
         A.RandomRotate90(p=0.5),
-        A.ShiftScaleRotate(
-            shift_limit=0.1, scale_limit=0.15, rotate_limit=30, p=0.5
+        A.Affine(
+            translate_percent=(-0.1, 0.1), scale=(0.85, 1.15), rotate=(-30, 30), p=0.5
         ),
         A.OneOf([
             A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
             A.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20),
         ], p=0.5),
-        A.CoarseDropout(max_holes=8, max_height=16, max_width=16, p=0.3),
+        A.CoarseDropout(num_holes_range=(4, 8), hole_height_range=(8, 16), hole_width_range=(8, 16), p=0.3),
         A.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ToTensorV2(),
     ])
