@@ -1,0 +1,20 @@
+{
+  "age_min": 0.0,
+  "age_max": 85.0,
+  "site_mapping": {
+    "anterior torso": 0,
+    "head/neck": 1,
+    "lateral torso": 2,
+    "lower extremity": 3,
+    "oral/genital": 4,
+    "palms/soles": 5,
+    "posterior torso": 6,
+    "unknown": 7,
+    "upper extremity": 8
+  },
+  "sex_mapping": {
+    "female": 0,
+    "male": 1
+  },
+  "n_meta_features": 3
+}
