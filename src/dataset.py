@@ -8,6 +8,7 @@ optional patient metadata from CSV for the 8-class classification task.
 import os
 from typing import Callable, Optional, Tuple
 
+import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
@@ -75,20 +76,12 @@ class ISICDataset(Dataset):
         image_id = self.image_ids[idx]
         image_path = os.path.join(self.image_dir, f"{image_id}.jpg")
         image = Image.open(image_path).convert("RGB")
+        image = np.array(image)
 
         if self.transform is not None:
-            image = self.transform(image)
+            image = self.transform(image=image)["image"]
 
         label = int(self.labels[idx])
-
-        if self.metadata is not None and image_id in self.metadata.index:
-            row = self.metadata.loc[image_id]
-            meta = {
-                "age": row.get("age_approx", 0),
-                "sex": row.get("sex", "unknown"),
-                "site": row.get("anatom_site_general", "unknown"),
-            }
-            return image, meta, label
 
         return image, label
 
