@@ -2,7 +2,7 @@
 # ISIC 2019 Skin Lesion Classification
 
 data:
-  image_size: 224
+  image_size: 300
   num_classes: 8
   class_names:
     - MEL    # Melanoma
@@ -32,6 +32,8 @@ model:
   dropout: 0.3
   freeze_layers: true
   unfreeze_epoch: 5
+  loss: focal          # "ce" for cross-entropy, "focal" for focal loss
+  focal_gamma: 2.0
 
 wandb:
   project: derm-vision

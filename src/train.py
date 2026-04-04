@@ -10,10 +10,34 @@ import os
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 import wandb
 import yaml
 from torch.utils.data import DataLoader
+
+
+class FocalLoss(nn.Module):
+    """Focal Loss for addressing class imbalance.
+
+    Reduces loss for well-classified examples, focusing training on hard
+    negatives. Combines with class weights for doubly-imbalanced datasets.
+
+    Args:
+        weight: Per-class weights tensor.
+        gamma: Focusing parameter. Higher gamma = more focus on hard examples.
+    """
+
+    def __init__(self, weight: torch.Tensor = None, gamma: float = 2.0):
+        super().__init__()
+        self.weight = weight
+        self.gamma = gamma
+
+    def forward(self, inputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        ce_loss = F.cross_entropy(inputs, targets, weight=self.weight, reduction="none")
+        pt = torch.exp(-ce_loss)
+        focal_loss = ((1 - pt) ** self.gamma) * ce_loss
+        return focal_loss.mean()
 
 from src.dataset import ISICDataset
 from src.evaluate import compute_metrics
@@ -156,9 +180,16 @@ def train(config_path: str) -> None:
         dropout=cfg["model"]["dropout"],
     ).to(device)
 
-    # Weighted cross-entropy loss
+    # Loss function
     class_weights = train_dataset.get_class_weights().to(device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    loss_type = cfg["model"].get("loss", "ce")
+    if loss_type == "focal":
+        gamma = cfg["model"].get("focal_gamma", 2.0)
+        criterion = FocalLoss(weight=class_weights, gamma=gamma)
+        print(f"Using Focal Loss (gamma={gamma}) with class weights")
+    else:
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
+        print("Using Weighted Cross-Entropy Loss")
 
     optimizer = optim.Adam(
         model.parameters(),
