@@ -41,8 +41,26 @@ class FocalLoss(nn.Module):
 
 from src.dataset import ISICDataset
 from src.evaluate import compute_metrics
+from src.models.custom_cnn import CustomCNN
 from src.models.efficientnet import EfficientNetB3Classifier
 from src.transforms import get_train_transforms, get_val_transforms
+
+
+def build_model(cfg: dict, device: torch.device) -> nn.Module:
+    """Build model from config."""
+    backbone = cfg["model"]["backbone"]
+    if backbone == "custom-cnn":
+        model = CustomCNN(
+            num_classes=cfg["data"]["num_classes"],
+            dropout=cfg["model"]["dropout"],
+        )
+    else:
+        model = EfficientNetB3Classifier(
+            num_classes=cfg["data"]["num_classes"],
+            pretrained=cfg["model"].get("pretrained", True),
+            dropout=cfg["model"]["dropout"],
+        )
+    return model.to(device)
 
 
 def train_one_epoch(
@@ -174,11 +192,8 @@ def train(config_path: str) -> None:
     )
 
     # Model
-    model = EfficientNetB3Classifier(
-        num_classes=cfg["data"]["num_classes"],
-        pretrained=cfg["model"]["pretrained"],
-        dropout=cfg["model"]["dropout"],
-    ).to(device)
+    model = build_model(cfg, device)
+    print(f"Model: {cfg['model']['backbone']}")
 
     # Loss function
     class_weights = train_dataset.get_class_weights().to(device)
