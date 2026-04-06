@@ -34,6 +34,7 @@ model:
   unfreeze_epoch: 5
   loss: focal          # "ce" for cross-entropy, "focal" for focal loss
   focal_gamma: 2.0
+  use_class_weights: false  # focal loss handles imbalance on its own
 
 wandb:
   project: derm-vision

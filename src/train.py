@@ -183,13 +183,16 @@ def train(config_path: str) -> None:
     # Loss function
     class_weights = train_dataset.get_class_weights().to(device)
     loss_type = cfg["model"].get("loss", "ce")
+    use_class_weights = cfg["model"].get("use_class_weights", True)
     if loss_type == "focal":
         gamma = cfg["model"].get("focal_gamma", 2.0)
-        criterion = FocalLoss(weight=class_weights, gamma=gamma)
-        print(f"Using Focal Loss (gamma={gamma}) with class weights")
+        w = class_weights if use_class_weights else None
+        criterion = FocalLoss(weight=w, gamma=gamma)
+        print(f"Using Focal Loss (gamma={gamma}, class_weights={use_class_weights})")
     else:
-        criterion = nn.CrossEntropyLoss(weight=class_weights)
-        print("Using Weighted Cross-Entropy Loss")
+        w = class_weights if use_class_weights else None
+        criterion = nn.CrossEntropyLoss(weight=w)
+        print(f"Using Cross-Entropy Loss (class_weights={use_class_weights})")
 
     optimizer = optim.Adam(
         model.parameters(),
