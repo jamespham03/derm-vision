@@ -2,7 +2,7 @@
 # ISIC 2019 Skin Lesion Classification
 
 data:
-  image_size: 224
+  image_size: 300
   num_classes: 8
   class_names:
     - MEL    # Melanoma
