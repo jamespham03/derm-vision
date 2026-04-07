@@ -7,6 +7,7 @@ learning rate scheduling, early stopping, and Weights & Biases logging.
 
 import argparse
 import os
+from datetime import datetime
 
 import torch
 import torch.nn as nn
@@ -150,7 +151,13 @@ def train(config_path: str) -> None:
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+    print(f"Using device: {device}")
 
     # Initialize W&B
     wandb.init(
@@ -158,6 +165,18 @@ def train(config_path: str) -> None:
         entity=cfg["wandb"].get("entity"),
         config=cfg,
     )
+
+    # Create unique run directory to avoid overwriting previous runs
+    run_name = wandb.run.name or datetime.now().strftime("%Y%m%d_%H%M%S")
+    backbone = cfg["model"]["backbone"]
+    run_tag = f"{backbone}_{run_name}"
+    checkpoint_dir = os.path.join(cfg["output"]["checkpoint_dir"], run_tag)
+    results_dir = os.path.join(cfg["output"]["results_dir"], run_tag)
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    os.makedirs(results_dir, exist_ok=True)
+    print(f"Run: {run_tag}")
+    print(f"  Checkpoints: {checkpoint_dir}")
+    print(f"  Results:     {results_dir}")
 
     # Datasets and loaders
     train_transform = get_train_transforms(cfg["data"]["image_size"])
@@ -176,19 +195,20 @@ def train(config_path: str) -> None:
         transform=val_transform,
     )
 
+    pin = device.type == "cuda"
     train_loader = DataLoader(
         train_dataset,
         batch_size=cfg["training"]["batch_size"],
         shuffle=True,
         num_workers=cfg["training"]["num_workers"],
-        pin_memory=True,
+        pin_memory=pin,
     )
     val_loader = DataLoader(
         val_dataset,
         batch_size=cfg["training"]["batch_size"],
         shuffle=False,
         num_workers=cfg["training"]["num_workers"],
-        pin_memory=True,
+        pin_memory=pin,
     )
 
     # Model
@@ -255,9 +275,7 @@ def train(config_path: str) -> None:
         if val_metrics["loss"] < best_val_loss:
             best_val_loss = val_metrics["loss"]
             patience_counter = 0
-            ckpt_path = os.path.join(
-                cfg["output"]["checkpoint_dir"], "best_model.pth"
-            )
+            ckpt_path = os.path.join(checkpoint_dir, "best_model.pth")
             torch.save(model.state_dict(), ckpt_path)
             print(f"  Saved best model to {ckpt_path}")
         else:
