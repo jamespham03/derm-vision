@@ -109,11 +109,14 @@ def run_predict(image: Image.Image) -> tuple[dict, Image.Image | None]:
     try:
         target_layer = MODEL.backbone.conv_head
         heatmap_array = generate_gradcam(
-            MODEL, image, target_layer, IMAGE_SIZE, target_class=pred_class, device=DEVICE
+            MODEL, image, target_layer, IMAGE_SIZE, target_class=pred_class, device=str(DEVICE)
         )
         heatmap_img = Image.fromarray((heatmap_array * 255).astype(np.uint8))
+        print(f"✓ Grad-CAM generated for class {pred_class}")
     except Exception as e:
-        print(f"Grad-CAM generation failed: {e}")
+        print(f"✗ Grad-CAM generation failed: {e}")
+        import traceback
+        traceback.print_exc()
         heatmap_img = None
 
     return {name: float(p) for name, p in zip(CLASS_NAMES, probs)}, heatmap_img
