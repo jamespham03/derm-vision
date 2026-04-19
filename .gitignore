@@ -2,11 +2,6 @@
 data/raw/
 data/processed/
 
-# Model checkpoints
-outputs/checkpoints/
-*.pth
-*.pt
-
 # W&B
 wandb/
 
