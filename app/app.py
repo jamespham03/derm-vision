@@ -420,7 +420,21 @@ def create_app() -> gr.Blocks:
         with gr.Column(visible=False) as page2:
             gr.HTML(steps_html(2))
             results_html = gr.HTML(value="")
-            gr.HTML('<div class="section-hdr">🔍 Model Attention Map (Grad-CAM)</div>')
+            gr.HTML('''
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:16px;padding:24px;
+                 margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                <div style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:12px;
+                     display:flex;align-items:center;gap:8px;">
+                    <span style="background:#dbeafe;width:30px;height:30px;border-radius:8px;
+                         display:inline-flex;align-items:center;justify-content:center;font-size:15px;">🔍</span>
+                    Model Attention Map (Grad-CAM)
+                </div>
+                <div style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:14px;">
+                    The heatmap below shows which regions of the image the AI model focused on when making its prediction.
+                    <strong>Red/warm areas</strong> indicate high importance, while <strong>blue/cool areas</strong> are less relevant.
+                    This helps validate that the model is examining the lesion itself, not artifacts or skin background.
+                </div>
+            </div>''')
             heatmap_img = gr.Image(label="Grad-CAM Visualization", type="pil")
             back_btn = gr.Button("\u2190 Start New Analysis", variant="secondary", size="lg")
 
