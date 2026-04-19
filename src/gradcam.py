@@ -44,6 +44,10 @@ def generate_gradcam(
     model.eval()
     model.to(device)
 
+    # Enable gradients for Grad-CAM
+    for param in model.parameters():
+        param.requires_grad = True
+
     # Load and preprocess image
     if isinstance(image_path, str):
         raw_image = Image.open(image_path).convert("RGB")
@@ -56,6 +60,7 @@ def generate_gradcam(
     transform = get_val_transforms(image_size)
     input_tensor = transform(image=np.array(raw_image))["image"]
     input_tensor = input_tensor.unsqueeze(0).to(device)
+    input_tensor.requires_grad = True
 
     # Build Grad-CAM
     cam = GradCAM(model=model, target_layers=[target_layer])
@@ -65,7 +70,9 @@ def generate_gradcam(
         from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
         targets = [ClassifierOutputTarget(target_class)]
 
-    grayscale_cam = cam(input_tensor=input_tensor, targets=targets)
+    with torch.enable_grad():
+        grayscale_cam = cam(input_tensor=input_tensor, targets=targets)
+
     grayscale_cam = grayscale_cam[0, :]
 
     visualization = show_cam_on_image(rgb_image.astype(np.float32), grayscale_cam, use_rgb=True)
