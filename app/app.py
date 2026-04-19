@@ -409,8 +409,13 @@ def create_app() -> gr.Blocks:
             inputs=[image_input, age, sex, skin_type, location, duration,
                     changed, symptoms, family_history],
             outputs=[page1, page2, results_html],
+            show_progress="hidden",
         )
-        back_btn.click(fn=go_back, outputs=[page1, page2, results_html])
+        back_btn.click(
+            fn=go_back,
+            outputs=[page1, page2, results_html],
+            show_progress="hidden",
+        )
 
     return app
 
