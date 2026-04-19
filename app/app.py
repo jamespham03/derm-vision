@@ -17,6 +17,7 @@ from PIL import Image
 from src.dataset import CLASS_NAMES
 from src.models.efficientnet import EfficientNetB3Classifier
 from src.transforms import get_val_transforms
+from src.gradcam import generate_gradcam
 
 # ── Globals ───────────────────────────────────────────────────────────────────
 MODEL = None
@@ -91,16 +92,31 @@ def load_model(checkpoint_path: str) -> None:
     print(f"Model loaded from {checkpoint_path}")
 
 
-def run_predict(image: Image.Image) -> dict:
+def run_predict(image: Image.Image) -> tuple[dict, Image.Image | None]:
     if MODEL is None:
-        return {name: 1.0 / 8 for name in CLASS_NAMES}
+        return {name: 1.0 / 8 for name in CLASS_NAMES}, None
+
     image_np = np.array(image.convert("RGB"))
     transform = get_val_transforms(IMAGE_SIZE)
     tensor = transform(image=image_np)["image"].unsqueeze(0).to(DEVICE)
+
     with torch.no_grad():
         logits = MODEL(tensor)
         probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
-    return {name: float(p) for name, p in zip(CLASS_NAMES, probs)}
+
+    # Generate Grad-CAM heatmap for predicted class
+    pred_class = int(np.argmax(probs))
+    try:
+        target_layer = MODEL.backbone.conv_head
+        heatmap_array = generate_gradcam(
+            MODEL, image, target_layer, IMAGE_SIZE, target_class=pred_class, device=DEVICE
+        )
+        heatmap_img = Image.fromarray((heatmap_array * 255).astype(np.uint8))
+    except Exception as e:
+        print(f"Grad-CAM generation failed: {e}")
+        heatmap_img = None
+
+    return {name: float(p) for name, p in zip(CLASS_NAMES, probs)}, heatmap_img
 
 
 # ── Results HTML ──────────────────────────────────────────────────────────────
@@ -240,16 +256,16 @@ def build_results_html(probs, age, sex, skin_type, location, duration, changed, 
 def analyze(image, age, sex, skin_type, location, duration, changed, symptoms, family_history):
     if image is None:
         gr.Warning("Please upload or capture a skin image before analyzing.")
-        return gr.update(visible=True), gr.update(visible=False), gr.update(value="")
-    probs = run_predict(image)
+        return gr.update(visible=True), gr.update(visible=False), gr.update(value=""), gr.update(value=None)
+    probs, heatmap_img = run_predict(image)
     html = build_results_html(
         probs, age, sex, skin_type, location, duration, changed, symptoms, family_history
     )
-    return gr.update(visible=False), gr.update(visible=True), gr.update(value=html)
+    return gr.update(visible=False), gr.update(visible=True), gr.update(value=html), gr.update(value=heatmap_img)
 
 
 def go_back():
-    return gr.update(visible=True), gr.update(visible=False), gr.update(value="")
+    return gr.update(visible=True), gr.update(visible=False), gr.update(value=""), gr.update(value=None)
 
 
 # ── UI constants ──────────────────────────────────────────────────────────────
@@ -401,6 +417,8 @@ def create_app() -> gr.Blocks:
         with gr.Column(visible=False) as page2:
             gr.HTML(steps_html(2))
             results_html = gr.HTML(value="")
+            gr.HTML('<div class="section-hdr">🔍 Model Attention Map (Grad-CAM)</div>')
+            heatmap_img = gr.Image(label="Grad-CAM Visualization", type="pil")
             back_btn = gr.Button("\u2190 Start New Analysis", variant="secondary", size="lg")
 
         # ── Events ─────────────────────────────────────────────────────────────
@@ -408,12 +426,12 @@ def create_app() -> gr.Blocks:
             fn=analyze,
             inputs=[image_input, age, sex, skin_type, location, duration,
                     changed, symptoms, family_history],
-            outputs=[page1, page2, results_html],
+            outputs=[page1, page2, results_html, heatmap_img],
             show_progress="hidden",
         )
         back_btn.click(
             fn=go_back,
-            outputs=[page1, page2, results_html],
+            outputs=[page1, page2, results_html, heatmap_img],
             show_progress="hidden",
         )
 
