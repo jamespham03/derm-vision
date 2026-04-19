@@ -22,17 +22,17 @@ from src.transforms import get_val_transforms
 
 def generate_gradcam(
     model: nn.Module,
-    image_path: str,
+    image_path,
     target_layer: nn.Module,
     image_size: int = 224,
     target_class: Optional[int] = None,
-    device: str = "cpu",
+    device = "cpu",
 ) -> np.ndarray:
     """Generate a Grad-CAM heatmap for a single image.
 
     Args:
         model: Trained classification model.
-        image_path: Path to the input image.
+        image_path: Path to the input image or PIL Image object.
         target_layer: The convolutional layer to compute Grad-CAM for.
         image_size: Resize dimension for preprocessing.
         target_class: Class index to explain. If None, uses the predicted class.
@@ -45,7 +45,11 @@ def generate_gradcam(
     model.to(device)
 
     # Load and preprocess image
-    raw_image = Image.open(image_path).convert("RGB")
+    if isinstance(image_path, str):
+        raw_image = Image.open(image_path).convert("RGB")
+    else:
+        raw_image = image_path.convert("RGB") if hasattr(image_path, 'convert') else image_path
+
     raw_image = raw_image.resize((image_size, image_size))
     rgb_image = np.array(raw_image) / 255.0
 
