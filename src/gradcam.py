@@ -22,17 +22,17 @@ from src.transforms import get_val_transforms
 
 def generate_gradcam(
     model: nn.Module,
-    image_path: str,
+    image_path,
     target_layer: nn.Module,
     image_size: int = 224,
     target_class: Optional[int] = None,
-    device: str = "cpu",
+    device = "cpu",
 ) -> np.ndarray:
     """Generate a Grad-CAM heatmap for a single image.
 
     Args:
         model: Trained classification model.
-        image_path: Path to the input image.
+        image_path: Path to the input image or PIL Image object.
         target_layer: The convolutional layer to compute Grad-CAM for.
         image_size: Resize dimension for preprocessing.
         target_class: Class index to explain. If None, uses the predicted class.
@@ -44,14 +44,23 @@ def generate_gradcam(
     model.eval()
     model.to(device)
 
+    # Enable gradients for Grad-CAM
+    for param in model.parameters():
+        param.requires_grad = True
+
     # Load and preprocess image
-    raw_image = Image.open(image_path).convert("RGB")
+    if isinstance(image_path, str):
+        raw_image = Image.open(image_path).convert("RGB")
+    else:
+        raw_image = image_path.convert("RGB") if hasattr(image_path, 'convert') else image_path
+
     raw_image = raw_image.resize((image_size, image_size))
     rgb_image = np.array(raw_image) / 255.0
 
     transform = get_val_transforms(image_size)
     input_tensor = transform(image=np.array(raw_image))["image"]
     input_tensor = input_tensor.unsqueeze(0).to(device)
+    input_tensor.requires_grad = True
 
     # Build Grad-CAM
     cam = GradCAM(model=model, target_layers=[target_layer])
@@ -61,7 +70,9 @@ def generate_gradcam(
         from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
         targets = [ClassifierOutputTarget(target_class)]
 
-    grayscale_cam = cam(input_tensor=input_tensor, targets=targets)
+    with torch.enable_grad():
+        grayscale_cam = cam(input_tensor=input_tensor, targets=targets)
+
     grayscale_cam = grayscale_cam[0, :]
 
     visualization = show_cam_on_image(rgb_image.astype(np.float32), grayscale_cam, use_rgb=True)
