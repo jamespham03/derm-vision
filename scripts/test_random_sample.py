@@ -27,7 +27,7 @@ from src.models.efficientnet import EfficientNetB3Classifier
 from src.transforms import get_val_transforms
 
 CHECKPOINT = "outputs/checkpoints/efficientnet-b3_cardassian-spot-5/best_model-2.pth"
-RAW_DIR = "data/raw"
+RAW_DIR = "data/raw/ISIC_2019_Training_Input/ISIC_2019_Training_Input"
 GT_CSV = "data/raw/ISIC_2019_Training_GroundTruth.csv"
 IMAGE_SIZE = 300
 NUM_CLASSES = 8

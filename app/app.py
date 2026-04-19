@@ -20,8 +20,12 @@ from src.transforms import get_val_transforms
 
 # ── Globals ───────────────────────────────────────────────────────────────────
 MODEL = None
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-IMAGE_SIZE = 224
+DEVICE = torch.device(
+    "cuda" if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available()
+    else "cpu"
+)
+IMAGE_SIZE = 300
 
 # ── Class metadata ────────────────────────────────────────────────────────────
 CLASS_INFO = {
@@ -412,7 +416,10 @@ def create_app() -> gr.Blocks:
 
 
 if __name__ == "__main__":
-    ckpt = os.path.join(PROJECT_ROOT, "outputs", "checkpoints", "best_model.pth")
+    ckpt = os.path.join(
+        PROJECT_ROOT, "outputs", "checkpoints",
+        "efficientnet-b3_cardassian-spot-5", "best_model-2.pth",
+    )
     if os.path.exists(ckpt):
         load_model(ckpt)
     else:
