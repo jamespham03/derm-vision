@@ -8,7 +8,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 1 — Melanocytic Nevus (NV) · LOW RISK
-**Image:** `images/ISIC_0000000.jpg`
+**Image:** `images/melanocytic_nevus_01.jpg`
 
 | Field | Answer |
 |---|---|
@@ -26,7 +26,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 2 — Melanoma (MEL) · HIGH RISK
-**Image:** `images/ISIC_0000002.jpg`
+**Image:** `images/melanoma.jpg`
 
 | Field | Answer |
 |---|---|
@@ -44,7 +44,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 3 — Benign Keratosis (BKL) · LOW RISK
-**Image:** `images/ISIC_0010491.jpg`
+**Image:** `images/benign_keratosis.jpg`
 
 | Field | Answer |
 |---|---|
@@ -62,7 +62,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 4 — Dermatofibroma (DF) · LOW RISK
-**Image:** `images/ISIC_0024318.jpg`
+**Image:** `images/dermatofibroma.jpg`
 
 | Field | Answer |
 |---|---|
@@ -80,7 +80,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 5 — Squamous Cell Carcinoma (SCC) · HIGH RISK
-**Image:** `images/ISIC_0024329.jpg`
+**Image:** `images/squamous_cell_carcinoma.jpg`
 
 | Field | Answer |
 |---|---|
@@ -98,7 +98,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 6 — Basal Cell Carcinoma (BCC) · HIGH RISK
-**Image:** `images/ISIC_0024331.jpg`
+**Image:** `images/basal_cell_carcinoma.jpg`
 
 | Field | Answer |
 |---|---|
@@ -116,7 +116,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 7 — Vascular Lesion (VASC) · LOW RISK
-**Image:** `images/ISIC_0024370.jpg`
+**Image:** `images/vascular_lesion.jpg`
 
 | Field | Answer |
 |---|---|
@@ -134,7 +134,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 8 — Actinic Keratosis / Bowen's (AKIEC) · MODERATE RISK
-**Image:** `images/ISIC_0024468.jpg`
+**Image:** `images/actinic_keratosis.jpg`
 
 | Field | Answer |
 |---|---|
@@ -152,7 +152,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 9 — Melanocytic Nevus, young female (NV) · LOW RISK
-**Image:** `images/ISIC_0000001.jpg`
+**Image:** `images/melanocytic_nevus_02.jpg`
 
 | Field | Answer |
 |---|---|
@@ -170,7 +170,7 @@ Images are in the `images/` folder alongside this document.
 ---
 
 ## Case 10 — Melanocytic Nevus, young male (NV) · LOW RISK
-**Image:** `images/ISIC_0000003.jpg`
+**Image:** `images/melanocytic_nevus_03.jpg`
 
 | Field | Answer |
 |---|---|
