@@ -423,16 +423,50 @@ def create_app() -> gr.Blocks:
             gr.HTML('''
             <div style="background:white;border:1px solid #e2e8f0;border-radius:16px;padding:24px;
                  margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                <div style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:12px;
+                <div style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:16px;
                      display:flex;align-items:center;gap:8px;">
                     <span style="background:#dbeafe;width:30px;height:30px;border-radius:8px;
                          display:inline-flex;align-items:center;justify-content:center;font-size:15px;">🔍</span>
                     Model Attention Map (Grad-CAM)
                 </div>
-                <div style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:14px;">
-                    The heatmap below shows which regions of the image the AI model focused on when making its prediction.
-                    <strong>Red/warm areas</strong> indicate high importance, while <strong>blue/cool areas</strong> are less relevant.
-                    This helps validate that the model is examining the lesion itself, not artifacts or skin background.
+
+                <div style="margin-bottom:16px;">
+                    <details style="cursor:pointer;">
+                        <summary style="font-weight:600;color:#0ea5e9;padding:8px;background:#f0f9ff;border-radius:8px;">
+                            📚 What is Grad-CAM? (Click to expand)
+                        </summary>
+                        <div style="margin-top:12px;padding:12px;background:#f8fafc;border-radius:8px;border-left:3px solid #0ea5e9;">
+                            <div style="font-size:13px;color:#1e293b;line-height:1.7;">
+                                <p><strong>Grad-CAM</strong> (Gradient-weighted Class Activation Mapping) is a technique that shows which pixels
+                                the AI model focused on when making its prediction.</p>
+
+                                <p style="margin-top:10px;"><strong>How it works:</strong></p>
+                                <ol style="margin:8px 0 8px 20px;padding:0;">
+                                    <li>Forward the image through the model → get prediction score</li>
+                                    <li>Compute gradients of that score with respect to the last convolutional layer</li>
+                                    <li>Weight each feature map by its gradient magnitude (importance)</li>
+                                    <li>Sum and activate → low-res attention map</li>
+                                    <li>Upsample and overlay on original image as colored heatmap</li>
+                                </ol>
+
+                                <p style="margin-top:10px;"><strong>Why it matters:</strong></p>
+                                <ul style="margin:8px 0 8px 20px;padding:0;">
+                                    <li><strong>Clinical trust:</strong> Confirms the model examines the lesion, not artifacts</li>
+                                    <li><strong>Debugging:</strong> Reveals if the model attends to irrelevant regions (ruler, hair, etc.)</li>
+                                    <li><strong>Interpretability:</strong> Makes AI predictions transparent and understandable</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <div style="background:linear-gradient(to right,#fef3c7,#fffbeb);border:1px solid #fcd34d;
+                     border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;gap:10px;">
+                    <span style="font-size:18px;flex-shrink:0;">💡</span>
+                    <div style="font-size:13px;color:#92400e;line-height:1.5;">
+                        <strong>How to read the heatmap:</strong> Red/warm colors = high importance (model paid attention).
+                        Blue/cool colors = low importance. Look for warm regions concentrated on the lesion itself.
+                    </div>
                 </div>
             </div>''')
             heatmap_img = gr.Image(label="Grad-CAM Visualization", type="pil")
