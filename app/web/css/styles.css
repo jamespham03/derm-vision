@@ -888,6 +888,118 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .back-btn:hover { background: var(--bg-elevated); border-color: rgba(255,255,255,0.15); }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHANTOM-STYLE HERO  (Analyze + About pages)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.phantom-hero {
+  padding: 52px 0 56px;
+}
+.phantom-hero-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 44px;
+}
+.phantom-sidenav {
+  flex-shrink: 0;
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 22px; /* aligns with cap-height of headline first line */
+}
+.phantom-sidenav-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 5px 0;
+  display: block;
+  white-space: nowrap;
+  color: rgba(240,237,230,0.24);
+  transition: color 150ms ease;
+  line-height: 1.5;
+}
+.phantom-sidenav-btn.active { color: rgba(240,237,230,0.88); }
+.phantom-sidenav-btn:hover  { color: rgba(240,237,230,0.6);  }
+
+.phantom-headline-block { flex: 1; min-width: 0; }
+.phantom-headline {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900;
+  font-size: clamp(54px, 8.2vw, 118px);
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: #f0ede6;
+  margin: 0 0 28px;
+  word-break: break-word;
+}
+.phantom-hero-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 520px;
+  line-height: 1.8;
+}
+.phantom-sep {
+  height: 0.5px;
+  background: rgba(240,237,230,0.07);
+}
+.phantom-content {
+  padding-top: 68px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ABOUT PAGE  (warm light gray — phantom.land "Approach" style)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.about-page {
+  --bg-base:       #dedad3;
+  --bg-surface:    #d4d0c9;
+  --bg-elevated:   #c9c5be;
+  --bg-border:     #b7b4ad;
+  --bg-overlay:    rgba(212,208,201,0.8);
+  --text-primary:  #0d0c0b;
+  --text-secondary:#5c5956;
+  --text-muted:    #9d9a95;
+  --border:        0.5px solid rgba(10,10,10,0.1);
+  --border-bright: 0.5px solid rgba(10,10,10,0.12);
+  --shadow-card:   0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-hover:  0 0 0 1px rgba(15,110,86,0.22), 0 8px 28px rgba(0,0,0,0.1);
+  --shadow-glow:   0 0 50px rgba(15,110,86,0.1);
+}
+.about-page .site-nav {
+  background: rgba(215,211,204,0.92);
+  border-bottom: 0.5px solid rgba(10,10,10,0.08);
+}
+.about-page .site-logo-circle { border-color: rgba(10,10,10,0.42); color: #0d0c0b; }
+.about-page .site-logo-name   { color: #0d0c0b; }
+.about-page .site-logo-badge  { color: rgba(10,10,10,0.32); border-color: rgba(10,10,10,0.14); }
+.about-page .site-cta-btn     { border-color: rgba(10,10,10,0.26); color: #0d0c0b; }
+.about-page .site-cta-btn:hover { background: #0d0c0b; color: #dedad3; border-color: #0d0c0b; }
+.about-page .site-tagline p   { color: rgba(10,10,10,0.42); }
+.about-page .phantom-sidenav-btn        { color: rgba(10,10,10,0.24); }
+.about-page .phantom-sidenav-btn.active { color: rgba(10,10,10,0.82); }
+.about-page .phantom-sidenav-btn:hover  { color: rgba(10,10,10,0.55); }
+.about-page .phantom-headline           { color: #0d0c0b; }
+.about-page .phantom-sep                { background: rgba(10,10,10,0.1); }
+.about-page .badge {
+  background: rgba(15,110,86,0.09);
+  border-color: rgba(15,110,86,0.18);
+  color: #0d5f4a;
+}
+.about-page .btn-secondary {
+  border-color: rgba(10,10,10,0.2);
+  color: #0d0c0b;
+}
+.about-page .btn-secondary:hover {
+  background: rgba(10,10,10,0.06);
+  border-color: rgba(10,10,10,0.35);
+}
+.about-page .home-cta   { background: #cac6bf; border-color: rgba(10,10,10,0.1); }
+.about-page .home-cta-title em { color: var(--accent); }
+.about-page .footer     { background: #c4c0b9; border-color: rgba(10,10,10,0.1); }
+
 /* ── Animations ─────────────────────────────────────────────────────────── */
 /* Sections are always visible by default — animation is progressive enhancement */
 .section-reveal {
@@ -909,9 +1021,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .home-cta { padding: 60px 24px; }
   .source-btns { gap: 8px; }
   .source-btn { padding: 9px 14px; font-size: 12px; }
+  .phantom-sidenav { display: none; }
+  .phantom-hero { padding: 38px 0 40px; }
+  .phantom-headline { font-size: clamp(42px, 12vw, 72px); margin-bottom: 18px; }
+  .phantom-content { padding-top: 44px; }
 }
 @media (max-width: 480px) {
   .image-grid { grid-template-columns: 1fr; }
   .grid-card.size-wide { grid-column: span 1; }
   .step-connector { width: 30px; }
+  .phantom-headline { font-size: clamp(36px, 13vw, 60px); }
 }
