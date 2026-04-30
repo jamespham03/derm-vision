@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DermVision — Analyze</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Unbounded:wght@300;400;700;900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="analyze-page">
+
+<!-- ── Shared top nav (matches homepage style) ────────────────────────── -->
+<nav class="site-nav">
+  <a href="/" class="site-logo-wrap">
+    <div class="site-logo-circle">D</div>
+    <span class="site-logo-name">DermVision</span>
+    <span class="site-logo-badge">BETA</span>
+  </a>
+  <a href="/analyze" class="site-cta-btn">LET'S ANALYZE</a>
+</nav>
+<div class="site-tagline">
+  <p>DermVision is a deep learning system classifying skin lesions across eight diagnostic categories using EfficientNet&#8209;B3.</p>
+</div>
+
+<main class="analyze-main">
+
+  <!-- ── Hero ────────────────────────────────────────────────────────────── -->
+  <div class="container">
+    <div class="analyze-hero">
+      <div class="badge" style="margin-bottom:20px;">
+        <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
+          <circle cx="4" cy="4" r="3" stroke="currentColor" stroke-width="1.3"/>
+          <circle cx="4" cy="4" r="1.2" fill="currentColor"/>
+        </svg>
+        AI-powered analysis
+      </div>
+      <h1 class="analyze-hero-title">
+        Analyze your<br><span style="font-style:italic;color:var(--accent);">skin image.</span>
+      </h1>
+      <p class="analyze-hero-sub">
+        Upload a dermoscopy photo. Our EfficientNet-B3 model classifies it across
+        eight lesion types in under a second.
+      </p>
+    </div>
+
+    <!-- ── Step indicator ─────────────────────────────────────────────── -->
+    <div class="step-indicator">
+      <div class="step active" id="step-1">
+        <div class="step-circle">1</div>
+        <span class="step-label">Upload image</span>
+      </div>
+      <div class="step-connector" id="step-connector"></div>
+      <div class="step inactive" id="step-2">
+        <div class="step-circle">2</div>
+        <span class="step-label">AI results</span>
+      </div>
+    </div>
+
+    <!-- ── Upload panel ───────────────────────────────────────────────── -->
+    <div class="upload-panel" id="upload-panel">
+
+      <!-- Section label -->
+      <div class="upload-section-label">
+        Skin image
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- Photo tips -->
+      <div style="background:var(--bg-surface);border:var(--border);border-radius:var(--r-md);
+                  padding:14px 18px;margin-bottom:16px;font-size:13px;color:var(--text-secondary);line-height:1.6;">
+        <div style="font-weight:500;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="5.5" stroke="var(--text-muted)" stroke-width="1.2"/>
+            <path d="M7 4.5v3" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="7" cy="9.5" r=".5" fill="var(--text-muted)"/>
+          </svg>
+          Photo tips for best results
+        </div>
+        <ul style="margin:0;padding-left:16px;display:flex;flex-direction:column;gap:2px;">
+          <li>Use a clear, well-lit, close-up photo of the affected area</li>
+          <li>Avoid shadows, blur, or extreme angles</li>
+          <li>Dermoscopy images yield the most accurate results</li>
+        </ul>
+      </div>
+
+      <!-- Upload zone -->
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept="image/*">
+
+        <!-- Default state -->
+        <div id="upload-default" class="upload-default-content" style="display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:none;">
+          <div class="upload-icon">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+              <rect x="1" y="1" width="42" height="42" rx="12" stroke="currentColor" stroke-width="1.5" stroke-opacity=".25"/>
+              <path d="M22 28V16M16 22l6-6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".6"/>
+              <path d="M14 31h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-opacity=".3"/>
+            </svg>
+          </div>
+          <div>
+            <div class="upload-title">Drop your image here</div>
+            <div class="upload-sub">or use the buttons below</div>
+          </div>
+        </div>
+
+        <!-- Preview state -->
+        <div class="upload-preview" id="upload-preview">
+          <img id="preview-img" alt="Preview">
+          <div class="upload-preview-overlay">
+            <button class="upload-preview-change" id="change-image-btn">Change image</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Source buttons -->
+      <div class="source-btns">
+        <button class="source-btn" id="btn-source-upload">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 2v8M4 6l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 11v1a2 2 0 002 2h8a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Upload file
+        </button>
+        <button class="source-btn" id="btn-source-camera">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="8" cy="8.5" r="2.2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6 3h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Open camera
+        </button>
+        <button class="source-btn" id="btn-source-paste">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="5" y="2" width="8" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M3 4H2.5A1.5 1.5 0 001 5.5v8A1.5 1.5 0 002.5 15h7A1.5 1.5 0 0011 13.5V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Paste image
+        </button>
+      </div>
+
+      <!-- Analyze button -->
+      <div class="analyze-btn-wrap">
+        <button class="analyze-cta" id="analyze-btn" disabled>
+          <span id="analyze-btn-text">Analyze with AI &nbsp;→</span>
+        </button>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="disclaimer">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:2px;">
+          <path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="var(--text-muted)" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M7 6v2.5" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="7" cy="10" r=".5" fill="var(--text-muted)"/>
+        </svg>
+        <span class="disclaimer-text">
+          <strong>Medical disclaimer:</strong> This tool is for educational and screening purposes only —
+          not medical advice, diagnosis, or treatment. Always consult a licensed dermatologist for any skin concerns.
+        </span>
+      </div>
+
+    </div><!-- #upload-panel -->
+
+    <!-- ── Results panel ──────────────────────────────────────────────── -->
+    <div class="results-panel" id="results-panel">
+
+      <!-- Demo mode notice -->
+      <div class="demo-banner" id="demo-notice" style="display:none;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;">
+          <path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="#c8820f" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M7 6v2.5" stroke="#c8820f" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="7" cy="10" r=".5" fill="#c8820f"/>
+        </svg>
+        <span><strong>Demo mode:</strong> No trained checkpoint found. Probabilities shown are simulated (equal weights).</span>
+      </div>
+
+      <!-- Medical warning -->
+      <div class="medical-warning">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;">
+          <path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="var(--text-muted)" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M7 6v2.5" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="7" cy="10" r=".5" fill="var(--text-muted)"/>
+        </svg>
+        <span><strong>Medical disclaimer:</strong> This tool is for educational and screening purposes only —
+        not medical advice, diagnosis, or treatment. Always consult a licensed dermatologist for any skin concerns.</span>
+      </div>
+
+      <!-- Diagnosis card -->
+      <div class="diagnosis-card" id="diagnosis-card">
+        <div class="diagnosis-header">
+          <div>
+            <div class="diag-label">Primary diagnosis</div>
+            <div class="diag-name" id="diag-name">—</div>
+            <div class="diag-meta" id="diag-meta"></div>
+          </div>
+          <span class="risk-badge" id="risk-badge">—</span>
+        </div>
+        <div class="diagnosis-desc" id="diag-desc"></div>
+        <div class="diagnosis-advice" id="diag-advice">
+          <div class="advice-icon" id="advice-icon">!</div>
+          <span class="advice-text" id="advice-text"></span>
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="breakdown-card">
+        <div class="breakdown-title">
+          Classification breakdown
+          <div class="divider-line"></div>
+        </div>
+        <div id="breakdown-rows"></div>
+      </div>
+
+      <!-- Back button -->
+      <button class="back-btn" id="back-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M11 7H3M6.5 3.5L3 7l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Start new analysis
+      </button>
+
+    </div><!-- #results-panel -->
+
+  </div><!-- .container -->
+</main>
+
+<!-- ── Camera modal ────────────────────────────────────────────────────── -->
+<div class="camera-modal" id="camera-modal">
+  <div class="camera-container">
+    <div class="camera-header">
+      <span class="camera-title">Take a photo</span>
+      <button class="camera-close" id="close-camera">×</button>
+    </div>
+    <video class="camera-video" id="camera-video" autoplay playsinline></video>
+    <div class="camera-footer">
+      <button class="btn btn-secondary" id="close-camera-cancel">Cancel</button>
+      <button class="btn btn-primary" id="capture-btn">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="8" cy="8.5" r="2.2" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Capture
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Footer ──────────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <span class="footer-copy">© 2025 DermVision · SJSU CMPE 258</span>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-model">
+    <div class="footer-dot"></div>
+    EfficientNet-B3 &nbsp;·&nbsp; ISIC 2019
+  </div>
+</footer>
+
+<script src="/js/analyze.js"></script>
+<script>
+  // Cancel button in camera modal
+  document.getElementById("close-camera-cancel").addEventListener("click", () => {
+    document.getElementById("close-camera").click();
+  });
+</script>
+
+<!-- ── Bottom pill nav ──────────────────────────────────────────────────── -->
+<nav class="site-bottom-nav">
+  <a href="/" class="site-pill-btn">Home</a>
+  <a href="/analyze" class="site-pill-btn active">Analyze</a>
+  <a href="/about" class="site-pill-btn">About</a>
+</nav>
+</body>
+</html>
