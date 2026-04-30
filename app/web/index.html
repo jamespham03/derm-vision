@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DermVision</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Unbounded:wght@300;400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  *, *::before, *::after { margin:0;padding:0;box-sizing:border-box; }
+  :root { --bg:#080808;--fg:#f0ede6;--pill-border:#2a2a2a;--mono:'Space Mono',monospace;--display:'Unbounded',sans-serif; }
+  html,body { width:100%;height:100%;background:var(--bg);color:var(--fg);font-family:var(--mono);overflow:hidden;cursor:none; }
+
+  /* ── Custom cursor ─────────────────────────────────────────────────────── */
+  #cursor { position:fixed;top:0;left:0;width:10px;height:10px;background:var(--fg);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:width .2s,height .2s; }
+  #cursor.big { width:36px;height:36px;background:rgba(240,237,230,.1);border:1px solid var(--fg); }
+  #cursor-ring { position:fixed;top:0;left:0;width:28px;height:28px;border:1px solid rgba(240,237,230,.3);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%); }
+
+  /* ── Top nav ───────────────────────────────────────────────────────────── */
+  nav { position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;pointer-events:none; }
+  nav > * { pointer-events:all; }
+
+  .logo-wrap { display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);cursor:none; }
+  .logo-circle { width:36px;height:36px;border:1.5px solid rgba(240,237,230,.7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;font-weight:700;font-style:italic;flex-shrink:0; }
+  .logo-name { font-family:var(--display);font-size:13px;font-weight:400;letter-spacing:.04em; }
+  .logo-badge { font-size:8px;letter-spacing:.1em;color:rgba(240,237,230,.4);text-transform:uppercase;border:1px solid rgba(240,237,230,.15);border-radius:100px;padding:2px 6px; }
+
+  .cta-btn { background:transparent;border:1px solid rgba(240,237,230,.35);border-radius:100px;color:var(--fg);font-family:var(--mono);font-size:11px;padding:8px 18px;cursor:none;letter-spacing:.08em;transition:background .2s,color .2s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center; }
+  .cta-btn:hover { background:var(--fg);color:var(--bg);border-color:var(--fg); }
+
+  /* ── Tagline — centred in nav row ─────────────────────────────────────── */
+  .tagline { position:fixed;left:50%;top:0;height:72px;display:flex;align-items:center;z-index:100;max-width:300px;pointer-events:none; }
+  .tagline p { font-family:var(--mono);font-size:10px;font-weight:400;line-height:1.65;letter-spacing:.04em;color:rgba(240,237,230,.75);text-transform:uppercase; }
+
+  /* ── Bottom pill nav ───────────────────────────────────────────────────── */
+  .bottom-nav { position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:2px;background:rgba(8,8,8,.85);border:1px solid var(--pill-border);border-radius:100px;padding:5px;backdrop-filter:blur(14px); }
+  .bottom-nav button { background:none;border:none;color:var(--fg);font-family:var(--mono);font-size:11px;padding:6px 18px;border-radius:100px;cursor:none;letter-spacing:.06em;transition:background .2s,color .2s; }
+  .bottom-nav button.active,.bottom-nav button:hover { background:var(--fg);color:var(--bg); }
+
+  /* ── Left HUD ──────────────────────────────────────────────────────────── */
+  .left-hud { position:fixed;left:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:8px; }
+  .hud-btn { width:34px;height:34px;border:1px solid var(--pill-border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:none;transition:border-color .2s,background .2s; }
+  .hud-btn:hover { border-color:var(--fg);background:rgba(240,237,230,.07); }
+  .hud-btn svg { width:13px;height:13px;fill:none;stroke:var(--fg);stroke-width:1.5; }
+
+  /* ── Canvas ────────────────────────────────────────────────────────────── */
+  #c { position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;will-change:transform;cursor:grab; }
+
+  /* ── Card tooltip ──────────────────────────────────────────────────────── */
+  #tooltip { position:fixed;z-index:150;pointer-events:none;opacity:0;transition:opacity .15s; }
+  #tooltip.show { opacity:1; }
+  .tt-title { font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.04em;text-shadow:0 2px 10px rgba(0,0,0,.9); }
+  .tt-tags { display:flex;gap:5px;margin-top:5px;flex-wrap:wrap; }
+  .tag { font-size:8px;border:1px solid rgba(240,237,230,.4);border-radius:100px;padding:3px 8px;color:rgba(240,237,230,.8);letter-spacing:.08em;text-transform:uppercase;background:rgba(8,8,8,.6);backdrop-filter:blur(4px); }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ── Top nav ─────────────────────────────────────────────────────────────── -->
+<nav>
+  <a href="/" class="logo-wrap">
+    <div class="logo-circle">D</div>
+    <span class="logo-name">DermVision</span>
+    <span class="logo-badge">BETA</span>
+  </a>
+  <a href="/analyze" class="cta-btn">LET'S ANALYZE</a>
+</nav>
+
+<!-- ── Tagline (centred, phantom.land style) ──────────────────────────────── -->
+<div class="tagline">
+  <p>DermVision is a deep learning system classifying skin lesions across eight diagnostic categories using EfficientNet&#8209;B3.</p>
+</div>
+
+<!-- ── Bottom floating pill nav ──────────────────────────────────────────── -->
+<div class="bottom-nav">
+  <button id="btn-home" class="active">Home</button>
+  <button id="btn-work">Analyze</button>
+  <button id="btn-about">About</button>
+</div>
+
+<!-- ── Left HUD (decorative) ──────────────────────────────────────────────── -->
+<div class="left-hud">
+  <div class="hud-btn">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  </div>
+  <div class="hud-btn">
+    <svg viewBox="0 0 24 24"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/></svg>
+  </div>
+</div>
+
+<!-- ── Hover tooltip ───────────────────────────────────────────────────────── -->
+<div id="tooltip">
+  <div class="tt-title" id="tt-t"></div>
+  <div class="tt-tags" id="tt-g"></div>
+</div>
+
+<canvas id="c"></canvas>
+
+<script>
+/* ── Skin lesion data — 12 cards (4 cols × 3 rows) ──────────────────────── */
+const PROJECTS = [
+  // Row 1
+  {title:'MELANOMA',          code:'MEL',   risk:'HIGH', tags:['MALIGNANT','DERMOSCOPY'],     c1:'#2e1206', c2:'#060302'},
+  {title:'MELANOCYTIC NEVUS', code:'NV',    risk:'LOW',  tags:['BENIGN','COMMON MOLE'],       c1:'#c07838', c2:'#3a2008'},
+  {title:'BASAL CELL',        code:'BCC',   risk:'HIGH', tags:['MALIGNANT','CARCINOMA'],      c1:'#d870a0', c2:'#380820'},
+  {title:'ACTINIC KERATOSIS', code:'AKIEC', risk:'MOD',  tags:['PRE-CANCEROUS','SUN DAMAGE'], c1:'#e07030', c2:'#380e04'},
+  // Row 2
+  {title:'BENIGN KERATOSIS',  code:'BKL',   risk:'LOW',  tags:['BENIGN','SEBORRHEIC'],        c1:'#e8c030', c2:'#2a1c00'},
+  {title:'DERMATOFIBROMA',    code:'DF',    risk:'LOW',  tags:['BENIGN','FIBROMA'],           c1:'#a870c0', c2:'#1c0830'},
+  {title:'VASCULAR LESION',   code:'VASC',  risk:'LOW',  tags:['BENIGN','VASCULAR'],          c1:'#e02020', c2:'#280202'},
+  {title:'SQUAMOUS CELL',     code:'SCC',   risk:'HIGH', tags:['MALIGNANT','SQUAMOUS'],       c1:'#30b880', c2:'#041a10'},
+  // Row 3 — second cycle
+  {title:'MELANOMA',          code:'MEL',   risk:'HIGH', tags:['HIGH RISK','NODULAR'],        c1:'#1e0a04', c2:'#080402'},
+  {title:'MELANOCYTIC NEVUS', code:'NV',    risk:'LOW',  tags:['LOW RISK','INTRADERMAL'],     c1:'#b86820', c2:'#2a1004'},
+  {title:'BASAL CELL',        code:'BCC',   risk:'HIGH', tags:['HIGH RISK','SUPERFICIAL'],    c1:'#c05870', c2:'#200014'},
+  {title:'ACTINIC KERATOSIS', code:'AKIEC', risk:'MOD',  tags:['MODERATE','BOWEN\'S'],        c1:'#d05820', c2:'#280804'},
+];
+
+const HOVER_COLORS = [
+  '#3d1a08','#7a4e1e','#8a3060','#c06020',
+  '#9a8020','#6030a0','#900808','#187040',
+  '#2a1004','#6a3e10','#7a2860','#a04010',
+];
+function pickHoverColor(idx){ return HOVER_COLORS[idx % HOVER_COLORS.length]; }
+
+/* ── Custom cursor ──────────────────────────────────────────────────────── */
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cur.style.left=mx+'px'; cur.style.top=my+'px'; });
+(function trailLoop(){ rx+=(mx-rx)*.13; ry+=(my-ry)*.13; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(trailLoop); })();
+document.querySelectorAll('button,.hud-btn,.logo-wrap').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cur.classList.add('big'));
+  el.addEventListener('mouseleave',()=>cur.classList.remove('big'));
+});
+
+/* ── Bottom nav navigation ──────────────────────────────────────────────── */
+document.getElementById('btn-home').addEventListener('click',  () => window.location.href='/');
+document.getElementById('btn-work').addEventListener('click',  () => window.location.href='/analyze');
+document.getElementById('btn-about').addEventListener('click', () => window.location.href='/about');
+
+// THREE SETUP
+const canvas = document.getElementById('c');
+const W=()=>window.innerWidth, H=()=>window.innerHeight;
+const dpr = Math.min(devicePixelRatio, 2);
+const renderer = new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setSize(W(),H());
+renderer.setPixelRatio(dpr);
+renderer.setClearColor(0x080808, 1);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, W()/H(), .1, 100);
+camera.position.z = 5;
+
+// Render target + pincushion distortion
+const rt = new THREE.WebGLRenderTarget(W()*dpr, H()*dpr, {
+  minFilter: THREE.LinearFilter,
+  magFilter: THREE.LinearFilter,
+  format: THREE.RGBAFormat,
+  generateMipmaps: false,
+});
+const postScene = new THREE.Scene();
+const postCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const postMat = new THREE.ShaderMaterial({
+  uniforms:{tDiffuse:{value:rt.texture},uK:{value:-0.18},uRes:{value:new THREE.Vector2(W()*dpr,H()*dpr)}},
+  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.);}`,
+  fragmentShader:`
+    uniform sampler2D tDiffuse;uniform float uK;uniform vec2 uRes;varying vec2 vUv;
+    void main(){
+      vec2 cc=vUv-.5;float r=dot(cc,cc);
+      vec2 w=vUv+cc*r*uK;
+      if(w.x<0.||w.x>1.||w.y<0.||w.y>1.) { gl_FragColor=vec4(0.031,0.031,0.031,1.); return; }
+      vec2 px=vec2(1.)/uRes;
+      vec4 col = vec4(0.);
+      col += texture2D(tDiffuse, w + vec2(-px.x,-px.y)) * 0.0625;
+      col += texture2D(tDiffuse, w + vec2( 0.  ,-px.y)) * 0.125;
+      col += texture2D(tDiffuse, w + vec2( px.x,-px.y)) * 0.0625;
+      col += texture2D(tDiffuse, w + vec2(-px.x, 0.  )) * 0.125;
+      col += texture2D(tDiffuse, w                    ) * 0.25;
+      col += texture2D(tDiffuse, w + vec2( px.x, 0.  )) * 0.125;
+      col += texture2D(tDiffuse, w + vec2(-px.x, px.y)) * 0.0625;
+      col += texture2D(tDiffuse, w + vec2( 0.  , px.y)) * 0.125;
+      col += texture2D(tDiffuse, w + vec2( px.x, px.y)) * 0.0625;
+      gl_FragColor = col;
+    }`
+});
+postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),postMat));
+
+// Grid layout constants
+const COLS=4, ROWS=3;
+const visH=2*Math.tan((60/2)*Math.PI/180)*5;
+const visW=visH*(W()/H());
+const PX_H = visW / W();
+const PX_V = visH / H();
+const HGAP = PX_H * 0.7;
+const VGAP = PX_V * 0.7;
+const CW=(visW-HGAP*(COLS-1))/COLS;
+const CH=(visH-VGAP*(ROWS-1))/ROWS;
+const cards=[];
+const group=new THREE.Group();
+scene.add(group);
+scene.background = new THREE.Color(0xFFFFE4);
+
+function mkInnerImage(c1,c2,inner){
+  const oc=document.createElement('canvas'); oc.width=oc.height=inner;
+  const octx=oc.getContext('2d');
+  const g=octx.createRadialGradient(inner/2,inner/2,inner*.05,inner/2,inner/2,inner*.75);
+  g.addColorStop(0,c1); g.addColorStop(1,c2);
+  octx.fillStyle=g; octx.fillRect(0,0,inner,inner);
+  const id=octx.getImageData(0,0,inner,inner);
+  for(let i=0;i<id.data.length;i+=4){
+    const n=(Math.random()-.5)*14;
+    id.data[i]=Math.max(0,Math.min(255,id.data[i]+n));
+    id.data[i+1]=Math.max(0,Math.min(255,id.data[i+1]+n));
+    id.data[i+2]=Math.max(0,Math.min(255,id.data[i+2]+n));
+  }
+  octx.putImageData(id,0,0);
+  return oc;
+}
+
+function mkGradTex(c1,c2,bgColor='#080808'){
+  const sz=512;
+  const cv=document.createElement('canvas'); cv.width=cv.height=sz;
+  const ctx=cv.getContext('2d');
+  const pad=Math.round(sz*0.10);
+  const inner=sz-pad*2;
+  const innerImg=mkInnerImage(c1,c2,inner);
+  function paint(bg){
+    ctx.fillStyle=bg; ctx.fillRect(0,0,sz,sz);
+    ctx.drawImage(innerImg,pad,pad);
+  }
+  paint(bgColor);
+  const tex=new THREE.CanvasTexture(cv);
+  return {tex, repaint:(bg)=>{ paint(bg); tex.needsUpdate=true; }};
+}
+
+function mkLabelTex(p){
+  const cw=512,ch=384; const cv=document.createElement('canvas'); cv.width=cw;cv.height=ch;
+  const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cw,ch);
+  const pad=Math.round(cw*0.10);
+  const mx=pad+10;
+  ctx.fillStyle='rgba(255,255,255,.78)';
+  ctx.font='bold 18px "Space Mono",monospace';
+  ctx.textAlign='left';
+  ctx.fillText(p.code, mx, pad+24);
+  const riskColor = p.risk==='HIGH' ? 'rgba(226,75,74,.95)' : p.risk==='MOD' ? 'rgba(239,159,39,.95)' : 'rgba(29,158,117,.95)';
+  const riskText  = p.risk==='HIGH' ? 'HIGH RISK' : p.risk==='MOD' ? 'MODERATE' : 'LOW RISK';
+  ctx.fillStyle=riskColor; ctx.textAlign='right';
+  ctx.font='bold 12px "Space Mono",monospace';
+  ctx.fillText(riskText, cw-mx, pad+24); ctx.textAlign='left';
+  ctx.fillStyle='rgba(255,255,255,.95)';
+  ctx.font='bold 34px "Unbounded",sans-serif';
+  const words=p.title.split(' ');
+  if(words.length>1){
+    ctx.fillText(words[0], mx, ch/2-8);
+    ctx.fillText(words.slice(1).join(' '), mx, ch/2+36);
+  } else {
+    ctx.fillText(p.title, mx, ch/2+14);
+  }
+  let tx=mx; const ty=ch-pad-6, th=26;
+  p.tags.forEach(tag=>{
+    ctx.font='11px "Space Mono",monospace';
+    const tw=ctx.measureText(tag).width+22;
+    ctx.strokeStyle='rgba(255,255,255,.45)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(tx,ty-th+4,tw,th,100); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.75)'; ctx.fillText(tag,tx+11,ty-3);
+    tx+=tw+7;
+  });
+  return new THREE.CanvasTexture(cv);
+}
+
+// Pre-build one texture per unique card
+const cardDefs=[];
+for(let i=0;i<COLS*ROWS;i++){
+  const p=PROJECTS[i%PROJECTS.length];
+  const {tex:baseTex,repaint}=mkGradTex(p.c1,p.c2);
+  const labelTex=mkLabelTex(p);
+  const hoverColor=pickHoverColor(i);
+  cardDefs.push({p,baseTex,repaint,labelTex,hoverColor});
+}
+
+// 3×3 tile pool — ensures viewport always covered during infinite drag
+const TILE_COLS=3, TILE_ROWS=3;
+for(let tRow=0;tRow<TILE_ROWS;tRow++){
+  for(let tCol=0;tCol<TILE_COLS;tCol++){
+    for(let row=0;row<ROWS;row++){
+      for(let col=0;col<COLS;col++){
+        const idx=row*COLS+col;
+        const def=cardDefs[idx];
+        const geo=new THREE.PlaneGeometry(CW,CH);
+        const mat=new THREE.MeshBasicMaterial({map:def.baseTex});
+        const mesh=new THREE.Mesh(geo,mat);
+        group.add(mesh);
+        const lMat=new THREE.MeshBasicMaterial({map:def.labelTex,transparent:true,depthWrite:false});
+        const lMesh=new THREE.Mesh(new THREE.PlaneGeometry(CW,CH),lMat);
+        lMesh.position.z=0.01;
+        group.add(lMesh);
+        const tileOffX=(tCol-1); // -1, 0, +1
+        const tileOffY=(tRow-1);
+        const baseX=(col-(COLS-1)/2)*(CW+HGAP);
+        const baseY=((ROWS-1)/2-row)*(CH+VGAP);
+        cards.push({mesh,lMesh,mat,p:def.p,hovered:false,repaint:def.repaint,
+                    hoverColor:def.hoverColor,baseX,baseY,tileOffX,tileOffY,col,row});
+      }
+    }
+  }
+}
+
+// Raycasting + tooltip
+const ray=new THREE.Raycaster();
+const mNorm=new THREE.Vector2();
+const tooltip=document.getElementById('tooltip');
+const ttT=document.getElementById('tt-t');
+const ttG=document.getElementById('tt-g');
+let hovCard=null;
+
+document.addEventListener('mousemove',e=>{
+  if(isDragging) return;
+  mNorm.x=(e.clientX/W())*2-1;
+  mNorm.y=-(e.clientY/H())*2+1;
+  ray.setFromCamera(mNorm,camera);
+  const hits=ray.intersectObjects(cards.map(c=>c.mesh));
+  if(hits.length){
+    const card=cards.find(c=>c.mesh===hits[0].object);
+    if(card&&card!==hovCard){
+      if(hovCard) leaveCard(hovCard);
+      hovCard=card; enterCard(card);
+    }
+    cur.classList.add('big');
+    ttT.textContent=card.p.title;
+    ttG.innerHTML=card.p.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+    tooltip.style.left=(e.clientX+18)+'px';
+    tooltip.style.top=(e.clientY-50)+'px';
+    tooltip.classList.add('show');
+  } else {
+    if(hovCard){leaveCard(hovCard);hovCard=null;}
+    cur.classList.remove('big');
+    tooltip.classList.remove('show');
+  }
+});
+
+// Click card → analyze (only if not dragging)
+let dragDist=0;
+canvas.addEventListener('click', e => {
+  if(dragDist > 4) return;
+  const nm=new THREE.Vector2((e.clientX/W())*2-1,-(e.clientY/H())*2+1);
+  const r=new THREE.Raycaster(); r.setFromCamera(nm,camera);
+  if(r.intersectObjects(cards.map(c=>c.mesh)).length) window.location.href='/analyze';
+});
+
+function hexRgb(hex){ const n=parseInt(hex.slice(1),16); return {r:(n>>16)&255,g:(n>>8)&255,b:n&255}; }
+
+function enterCard(c){
+  c.hovered=true;
+  const target=hexRgb(c.hoverColor);
+  const current={r:8,g:8,b:8};
+  gsap.to(current,{
+    r:target.r, g:target.g, b:target.b,
+    duration:.5, ease:'power2.out',
+    onUpdate:()=>{
+      const hex='#'+[current.r,current.g,current.b]
+        .map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
+      c.repaint(hex);
+    }
+  });
+  const ci=cards.indexOf(c);
+  cards.forEach((nb,ni)=>{ if(ni!==ci) gsap.to(nb.mesh.material.color,{r:.55,g:.55,b:.55,duration:.35}); });
+}
+
+function leaveCard(c){
+  c.hovered=false;
+  const current=hexRgb(c.hoverColor);
+  gsap.to(current,{
+    r:8, g:8, b:8,
+    duration:.6, ease:'power3.out',
+    onUpdate:()=>{
+      const hex='#'+[current.r,current.g,current.b]
+        .map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
+      c.repaint(hex);
+    }
+  });
+  cards.forEach(nb=>gsap.to(nb.mesh.material.color,{r:1,g:1,b:1,duration:.4}));
+}
+
+group.rotation.set(0,0,0);
+camera.position.set(0,0,5);
+camera.lookAt(0,0,0);
+
+// Infinite drag state
+let dragOffX=0, dragOffY=0;
+let velX=0, velY=0;
+let isDragging=false;
+let lastPX=0, lastPY=0;
+let mouseNX=0, mouseNY=0;
+
+// Mouse drag
+document.addEventListener('mousedown', e=>{
+  isDragging=true; dragDist=0;
+  lastPX=e.clientX; lastPY=e.clientY;
+  velX=0; velY=0;
+  canvas.style.cursor='grabbing';
+});
+document.addEventListener('mouseup', ()=>{ isDragging=false; canvas.style.cursor='grab'; });
+document.addEventListener('mousemove', e=>{
+  mouseNX=(e.clientX/W()-.5);
+  mouseNY=(e.clientY/H()-.5);
+  if(!isDragging) return;
+  const dx=e.clientX-lastPX, dy=e.clientY-lastPY;
+  dragDist+=Math.abs(dx)+Math.abs(dy);
+  const worldX=dx*(visW/W()), worldY=dy*(visH/H());
+  velX=worldX; velY=worldY;
+  dragOffX+=worldX; dragOffY+=worldY;
+  lastPX=e.clientX; lastPY=e.clientY;
+});
+
+// Touch drag
+document.addEventListener('touchstart', e=>{
+  isDragging=true; dragDist=0;
+  lastPX=e.touches[0].clientX; lastPY=e.touches[0].clientY;
+  velX=0; velY=0;
+},{passive:true});
+document.addEventListener('touchend', ()=>{ isDragging=false; },{passive:true});
+document.addEventListener('touchmove', e=>{
+  const dx=e.touches[0].clientX-lastPX, dy=e.touches[0].clientY-lastPY;
+  dragDist+=Math.abs(dx)+Math.abs(dy);
+  const worldX=dx*(visW/W()), worldY=dy*(visH/H());
+  velX=worldX; velY=worldY;
+  dragOffX+=worldX; dragOffY+=worldY;
+  lastPX=e.touches[0].clientX; lastPY=e.touches[0].clientY;
+},{passive:true});
+
+// Auto-scroll speed (world units per frame)
+const AUTO_SCROLL_X = visW / W() * 0.4;
+
+const clock=new THREE.Clock();
+let cssTx=0, cssTy=0;
+function animate(){
+  requestAnimationFrame(animate);
+
+  // Inertia after drag release
+  if(!isDragging){
+    velX*=0.92; velY*=0.92;
+    dragOffX+=velX; dragOffY+=velY;
+    // Gentle auto-scroll when nearly still
+    if(Math.abs(velX)<0.001) dragOffX+=AUTO_SCROLL_X;
+  }
+
+  // One full period of the base grid
+  const totalW=(CW+HGAP)*COLS;
+  const totalH=(CH+VGAP)*ROWS;
+
+  // Wrap offset and reposition all tile copies
+  cards.forEach(c=>{
+    let wx = c.baseX + c.tileOffX * totalW + ((dragOffX % totalW) + totalW) % totalW;
+    let wy = c.baseY + c.tileOffY * totalH - ((dragOffY % totalH) + totalH) % totalH;
+    // Re-wrap tile copies that drift beyond 1 period
+    if(wx >  totalW) wx -= totalW * TILE_COLS;
+    if(wx < -totalW) wx += totalW * TILE_COLS;
+    if(wy >  totalH) wy -= totalH * TILE_ROWS;
+    if(wy < -totalH) wy += totalH * TILE_ROWS;
+    c.mesh.position.x=wx; c.mesh.position.y=wy;
+    c.lMesh.position.x=wx; c.lMesh.position.y=wy;
+  });
+
+  renderer.setRenderTarget(rt);
+  renderer.setViewport(0,0,W(),H());
+  renderer.render(scene,camera);
+  renderer.setRenderTarget(null);
+  renderer.setViewport(0,0,W(),H());
+  renderer.render(postScene,postCam);
+
+  // Subtle CSS parallax on top of drag
+  cssTx+=(mouseNX*6-cssTx)*0.05;
+  cssTy+=(mouseNY*4-cssTy)*0.05;
+  canvas.style.transform=`translate(${cssTx}px,${cssTy}px) scale(1.04)`;
+}
+animate();
+
+// INTRO
+gsap.from(group.scale,{x:.85,y:.85,z:.85,duration:1.8,ease:'power4.out',delay:.1});
+gsap.from('nav > *',{y:-18,opacity:0,stagger:.1,duration:.9,ease:'power2.out',delay:.4});
+gsap.from('.tagline',{y:-18,opacity:0,duration:.9,ease:'power2.out',delay:.5});
+gsap.from('.left-hud',{x:-18,opacity:0,duration:.8,ease:'power2.out',delay:.6});
+gsap.from('.bottom-nav',{y:18,opacity:0,duration:.8,ease:'power2.out',delay:.5});
+
+// Resize
+window.addEventListener('resize',()=>{
+  renderer.setSize(W(),H());
+  rt.setSize(W()*dpr,H()*dpr);
+  postMat.uniforms.uRes.value.set(W()*dpr,H()*dpr);
+  camera.aspect=W()/H();
+  camera.updateProjectionMatrix();
+});
+</script>
+</body>
+</html>
