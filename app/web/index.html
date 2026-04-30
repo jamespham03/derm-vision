@@ -22,8 +22,8 @@
   nav > * { pointer-events:all; }
 
   .logo-wrap { display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);cursor:none; }
-  .logo-circle { width:36px;height:36px;border:1.5px solid rgba(240,237,230,.7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;font-weight:700;font-style:italic;flex-shrink:0; }
-  .logo-name { font-family:var(--display);font-size:13px;font-weight:400;letter-spacing:.04em; }
+  .logo-circle { width:43px;height:43px;border:1.5px solid rgba(240,237,230,.7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:17px;font-weight:700;font-style:italic;flex-shrink:0; }
+  .logo-name { font-family:var(--display);font-size:16px;font-weight:400;letter-spacing:.04em; }
   .logo-badge { font-size:8px;letter-spacing:.1em;color:rgba(240,237,230,.4);text-transform:uppercase;border:1px solid rgba(240,237,230,.15);border-radius:100px;padding:2px 6px; }
 
   .cta-btn { background:transparent;border:1px solid rgba(240,237,230,.35);border-radius:100px;color:var(--fg);font-family:var(--mono);font-size:11px;padding:8px 18px;cursor:none;letter-spacing:.08em;transition:background .2s,color .2s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center; }
@@ -196,8 +196,8 @@ const visH=2*Math.tan((60/2)*Math.PI/180)*5;
 const visW=visH*(W()/H());
 const PX_H = visW / W();
 const PX_V = visH / H();
-const HGAP = PX_H * 0.7;
-const VGAP = PX_V * 0.7;
+const HGAP = PX_H * 1;
+const VGAP = PX_V * 1;
 const CW=(visW-HGAP*(COLS-1))/COLS;
 const CH=(visH-VGAP*(ROWS-1))/ROWS;
 const cards=[];
