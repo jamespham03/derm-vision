@@ -2,6 +2,26 @@
 
 SJSU CMPE 258 Deep Learning Project: Skin Disease Classification System Using Deep Learning: A Multi-Class Approach
 
+## How to run web app
+
+**Requirements:** Python 3.9+, dependencies installed (`pip install -r requirements.txt`)
+
+```bash
+# From the project root
+python app/server.py
+```
+
+Then open **http://localhost:8000** in your browser.
+
+The server serves three pages:
+- `/` — Homepage (interactive skin lesion gallery)
+- `/analyze` — AI analysis tool (upload an image for classification)
+- `/about` — Project info, model details, and team
+
+**Model checkpoint** (`outputs/checkpoints/efficientnet-b3_cardassian-spot-5/best_model-2.pth`) must be present for real predictions. Without it, the app runs in demo mode with simulated probabilities.
+
+---
+
 ## Overview
 
 Deep learning project for classifying dermoscopy images into 8 skin lesion categories using the ISIC 2019 dataset. The primary model uses EfficientNet-B3 with transfer learning, weighted cross-entropy loss for class imbalance, and Grad-CAM for interpretability.
