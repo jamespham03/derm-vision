@@ -59,13 +59,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ── Shared site nav (About + Analyze pages) ──────────────────────────── */
 /* Matches the top nav bar from the homepage */
 .site-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  position: sticky; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
   padding: 18px 28px;
   background: rgba(8,8,8,0.88);
   backdrop-filter: blur(20px) saturate(1.2);
   -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  border-bottom: 0.5px solid rgba(255,255,255,0.06);
+  border-bottom: 0.25px solid rgba(255,255,255,0.06);
 }
 .site-logo-wrap {
   display: flex; align-items: center; gap: 10px;
@@ -264,7 +264,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ── Page layout ────────────────────────────────────────────────────────── */
 .page-top { padding-top: 72px; }  /* offset fixed site-nav */
-.container { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+.container { /*max-width: 1280px; */margin: 0 auto; padding: 0 40px; }
 
 @media (max-width: 768px) {
   .nav { padding: 0 20px; }
@@ -563,7 +563,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .analyze-main {
   flex: 1;
-  padding-top: 60px;
+  padding-top: 0px;
 }
 
 /* ── Analyze Hero ───────────────────────────────────────────────────────── */
@@ -898,7 +898,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .phantom-hero-inner {
   display: flex;
   align-items: flex-start;
-  gap: 44px;
+  gap: 300px;
+  margin-inline-start: 24px;
+  margin-inline-end: 24px;
 }
 .phantom-sidenav {
   flex-shrink: 0;
@@ -970,7 +972,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .about-page .site-nav {
   background: rgba(215,211,204,0.92);
-  border-bottom: 0.5px solid rgba(10,10,10,0.08);
+  border-bottom: 0.25px solid rgba(10,10,10,0.08);
 }
 .about-page .site-logo-circle { border-color: rgba(10,10,10,0.42); color: #0d0c0b; }
 .about-page .site-logo-name   { color: #0d0c0b; }
@@ -1031,4 +1033,235 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .grid-card.size-wide { grid-column: span 1; }
   .step-connector { width: 30px; }
   .phantom-headline { font-size: clamp(36px, 13vw, 60px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REFINEMENTS v2 — all rules here override earlier declarations via cascade
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Nav: taller + per-page separator colors ────────────────────────────── */
+.site-nav { padding: 24px 40px 80px 40px; }
+.analyze-page .site-nav { border-bottom: 0.25px solid rgba(255,255,228,0.5); }
+.about-page .site-nav {
+  background: #dedad3;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 0.25px solid #303234;
+}
+
+/* ── Logo +20% (shared site-nav on analyze + about) ─────────────────────── */
+.site-logo-circle { width: 43px; height: 43px; font-size: 17px; }
+.site-logo-name   { font-size: 16px; }
+
+/* ── Page offset updated for taller nav ─────────────────────────────────── */
+.page-top      { padding-top: 0px; }
+.analyze-main  { padding-top: 0px; }
+
+/* ── Phantom hero: tighter padding ─────────────────────────────────────── */
+.phantom-hero { padding: 40px 0 44px; }
+
+/* ── 3-col hero: sidenav | headline (flex-3) | desc (flex-2) at baseline ── */
+.phantom-text-cols {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 44px;
+}
+.phantom-headline {
+  flex: 3;
+  min-width: 0;
+  font-size: clamp(46px, 6.9vw, 100px);
+  margin-bottom: 0;
+}
+.phantom-hero-desc {
+  flex: 2;
+  min-width: 0;
+  max-width: none;
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin: 0;
+  padding-bottom: 10px;
+}
+
+/* ── Glassmorphism sidenav ──────────────────────────────────────────────── */
+.phantom-sidenav {
+  flex-shrink: 0;
+  width: auto;
+  padding: 6px;
+  padding-top: 6px;
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 0.5px solid rgba(255,255,255,0.13);
+  border-radius: 14px;
+  align-self: flex-start;
+}
+.phantom-sidenav-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(240,237,230,0.45);
+}
+.phantom-sidenav-btn.active {
+  background: rgba(255,255,255,0.14);
+  color: rgba(240,237,230,0.95);
+}
+.phantom-sidenav-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(240,237,230,0.7);
+}
+
+/* ── About page: glassmorphism sidenav (dark tones on light bg) ─────────── */
+.about-page .phantom-sidenav {
+  background: rgba(10,10,10,0.07);
+  border-color: rgba(10,10,10,0.12);
+}
+.about-page .phantom-sidenav-btn        { color: rgba(10,10,10,0.4); }
+.about-page .phantom-sidenav-btn.active { background: rgba(10,10,10,0.1); color: rgba(10,10,10,0.9); }
+.about-page .phantom-sidenav-btn:hover  { background: rgba(10,10,10,0.06); color: rgba(10,10,10,0.65); }
+
+/* ── Separator: spec'd colors per page ───────────────────────────────────── */
+.phantom-sep               { background: rgba(255,255,228,0.45); }
+.about-page .phantom-sep   { background: rgba(48,50,52,0.28); }
+
+/* ── Content: earlier appearance of upload zone (removed photo-tips space) ── */
+.phantom-content { padding-top: 20px; }
+
+/* ── Upload zone: more prominent on dark background ─────────────────────── */
+.upload-zone {
+  border: 1px solid rgba(255,255,255,0.22);
+  border-style: solid;
+  background: rgba(255,255,255,0.035);
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.02), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent);
+  background: rgba(15,110,86,0.06);
+  box-shadow: 0 0 0 4px rgba(15,110,86,0.1), var(--shadow-glow);
+}
+
+/* ── Analyze CTA: near-white ─────────────────────────────────────────────── */
+.analyze-cta {
+  background: rgba(240,237,230,0.9);
+  color: #0a0908;
+}
+.analyze-cta:hover:not(:disabled) { background: #f0ede6; color: #080706; }
+.analyze-cta .spinner {
+  border-color: rgba(10,9,8,0.2);
+  border-top-color: #0a0908;
+}
+
+/* ── About page: near-black primary button ───────────────────────────────── */
+.about-page .btn-primary       { background: #0d0c0b; color: #f0ede6; }
+.about-page .btn-primary:hover { background: #1e1c1b; }
+
+/* ── Body font: Space Grotesk ────────────────────────────────────────────── */
+.analyze-page,
+.about-page {
+  font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .phantom-text-cols { gap: 28px; }
+}
+@media (max-width: 768px) {
+  .site-nav       { padding: 18px 24px; }
+  .site-logo-circle { width: 38px; height: 38px; font-size: 15px; }
+  .site-logo-name   { font-size: 14px; }
+  .page-top       { padding-top: 0px; }
+  .analyze-main   { padding-top: 0px; }
+  .phantom-text-cols { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .phantom-hero-desc { padding-bottom: 0; font-size: 15px; }
+  .phantom-content   { padding-top: 28px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REFINEMENTS v3
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Nav separator: 0.25px on both pages */
+.analyze-page .site-nav { border-bottom-width: 0.25px; }
+.about-page   .site-nav { border-bottom: 0.25px solid #303234; }
+
+/* Remove hero/content separator line on both pages */
+.analyze-page .phantom-sep,
+.about-page   .phantom-sep { display: none; }
+
+/* Tighter hero horizontal padding — sidenav closer to left, desc closer to right */
+.phantom-hero .container { padding-left: 16px; padding-right: 16px; }
+
+/* Sidenav buttons: horizontal row instead of column */
+.phantom-sidenav {
+  flex-direction: row;
+  align-items: center;
+  padding: 5px;
+}
+
+/* Analyze CTA: pure white */
+.analyze-cta                        { background: #ffffff; color: #0a0908; }
+.analyze-cta:hover:not(:disabled)   { background: #f0f0f0; color: #080706; }
+.analyze-cta .spinner               { border-color: rgba(10,9,8,0.2); border-top-color: #0a0908; }
+
+/* Stats numbers: DM Serif Display (same font as hero headline) */
+.stat-num { font-family: 'DM Serif Display', serif; font-weight: 400; font-style: normal; }
+
+/* About page tagline: almost-black color */
+.about-page .site-tagline p { color: rgba(10,10,10,0.72); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REFINEMENTS v4
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hero container: near-zero horizontal padding so content spreads to edges */
+.phantom-hero .container { padding-left: 0; padding-right: 0; }
+
+/* Nav: no border — separator belongs to the hero section below */
+.analyze-page .site-nav,
+.about-page   .site-nav { border-bottom: none; }
+
+/* Separator as top edge of hero section, inset from screen edges */
+.analyze-page .phantom-hero,
+.about-page   .phantom-hero { position: relative; }
+
+.analyze-page .phantom-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 24px; right: 24px;
+  height: 0.1px;
+  background: rgba(255,255,228,0.5);
+}
+.about-page .phantom-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 24px; right: 24px;
+  height: 0.1px;
+  background: rgba(10,10,10,0.72);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REFINEMENTS v5  — responsive hero
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Gap: 300px was tuned for 1745px (17.2vw). Scale proportionally downward. */
+.phantom-hero-inner { gap: clamp(44px, 10vw, 300px); }
+
+/* Headline: never break mid-word; font scales with viewport on large screens */
+.phantom-headline {
+  word-break: normal;
+  overflow-wrap: break-word;
+  font-size: clamp(46px, 6vw, 100px); /* slightly tighter than 6.9vw */
+}
+
+/* 769–1523px: the flex:3 column is too narrow for 100px Unbounded 900.
+   Scale down aggressively so every word fits without breaking. */
+@media (min-width: 769px) and (max-width: 1523px) {
+  .phantom-headline  { font-size: clamp(46px, 5vw, 80px); }
+  .phantom-hero-desc { font-size: 14px; }
+}
+@media (min-width: 1169px) and (max-width: 1523px) {
+  .phantom-hero-desc { font-size: 16px; }
 }
