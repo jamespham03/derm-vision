@@ -1,215 +1,159 @@
-# EDA Summary & Data Preprocessing Plan
-**Project:** Skin Disease Classification System Using Deep Learning: A Multi-Class Approach
-**Dataset:** ISIC 2019 Challenge Training Dataset
+# EDA + Preprocessing Plan
 
----
+**Project:** Skin Disease Classification System Using Deep Learning — A Multi-Class Approach
+**Dataset:** ISIC 2019 Challenge (training set)
 
-## Part 1 — EDA Findings
+This is a working document — what we found while exploring the dataset, and the preprocessing plan we wrote before training started. Some of the numbers below are approximate (we didn't always carry every decimal through), and the final preprocessing in code may differ slightly from this plan; treat the code as authoritative when in doubt.
 
-### 1.1 Dataset Overview
+## Part 1 — What's in the data
 
-- **Total labeled samples:** 25,331 dermoscopic images
-- **Classes:** 8 disease categories (one-hot encoded in ground truth CSV)
-- **Supplementary files:** `ISIC_2019_Training_GroundTruth.csv`, `ISIC_2019_Training_Metadata.csv`
-- **Metadata fields:** `image`, `age_approx`, `anatom_site_general`, `lesion_id`, `sex`
+### Headline numbers
 
----
+- 25,331 dermoscopic images, JPEG, all labeled
+- 8 disease classes, one-hot encoded in `ISIC_2019_Training_GroundTruth.csv`
+- A separate metadata CSV with `image`, `age_approx`, `anatom_site_general`, `lesion_id`, `sex`
 
-### 1.2 Class Distribution
+### Class distribution
 
-| Code | Disease | Count | % of Dataset | Suggested Weight |
-|------|---------|------:|:------------:|:----------------:|
-| NV   | Melanocytic Nevi | 12,875 | 50.8% | ~0.15 |
+The first thing we noticed is how lopsided this dataset is. NV alone is more than half of it; DF and VASC together are under 2%.
+
+| Code | Disease | Count | % | Suggested inverse-freq weight |
+|------|---------|------:|:-:|:----:|
+| NV   | Melanocytic nevus | 12,875 | 50.8% | ~0.15 |
 | MEL  | Melanoma | 4,522 | 17.9% | ~0.44 |
-| BCC  | Basal Cell Carcinoma | 3,323 | 13.1% | ~0.60 |
-| BKL  | Benign Keratosis | 2,624 | 10.4% | ~0.76 |
-| AK   | Actinic Keratoses | 867 | 3.4% | ~2.29 |
-| SCC  | Squamous Cell Carcinoma | 628 | 2.5% | ~3.17 |
-| VASC | Vascular Lesions | 253 | 1.0% | ~7.87 |
+| BCC  | Basal cell carcinoma | 3,323 | 13.1% | ~0.60 |
+| BKL  | Benign keratosis | 2,624 | 10.4% | ~0.76 |
+| AK   | Actinic keratosis | 867 | 3.4% | ~2.29 |
+| SCC  | Squamous cell carcinoma | 628 | 2.5% | ~3.17 |
+| VASC | Vascular lesion | 253 | 1.0% | ~7.87 |
 | DF   | Dermatofibroma | 239 | 0.9% | ~8.33 |
 
-**Key finding:** The dataset has severe class imbalance. NV alone accounts for ~51% of all images, while DF and VASC together account for less than 2%. The max/min imbalance ratio is approximately **54x** (NV vs. DF). This will heavily bias a naive model toward predicting NV.
+The largest-to-smallest ratio is roughly 54×. A model that always predicts NV would already have over 50% accuracy, so plain accuracy is essentially useless here — we need balanced accuracy and per-class metrics.
 
----
+### Patient metadata
 
-### 1.3 Patient Metadata
+**Age.** Roughly 5–85 years, median around 50. The histogram peaks in the 40s and 60s. Older patients show up more often in BCC, AK, and SCC, which lines up with cumulative UV exposure being a known risk factor. NV and MEL skew younger.
 
-**Age:**
-- Range: ~5–85 years, median approximately 50
-- Distribution is roughly bell-shaped peaking in the 40–60 age range
-- Older patients tend to appear more frequently in BCC, AK, and SCC — all associated with cumulative UV exposure
-- Younger patients are more represented in NV and MEL
+**Sex.** Roughly balanced, with a slight male majority. DF has a noticeable female skew. MEL and SCC tilt slightly male.
 
-**Sex:**
-- Dataset is roughly balanced between male and female patients (slight male majority)
-- DF shows a noticeable female skew
-- MEL and SCC are slightly more male-skewed
+**Anatomical site.** Most lesions are on the posterior or anterior torso, or the upper/lower extremities. Two patterns stood out: VASC clusters on head/neck and lower extremity, and DF clusters heavily on the lower extremity.
 
-**Anatomical Site:**
-- Most common: posterior torso, anterior torso, upper extremity, lower extremity
-- VASC lesions appear predominantly on the head/neck and lower extremity
-- DF clusters heavily on the lower extremity
-- MEL is spread broadly across the torso and extremities
+A few percent of records are missing one or more of age, sex, or site. We don't want to drop them — for the smallest classes that would mean losing a meaningful chunk of training samples — so we'll need an imputation or "unknown" strategy.
 
-**Missing values:** Some percentage of records are missing age, sex, or anatomical site. Metadata is an optional but potentially useful auxiliary signal.
+### Image characteristics
 
----
+The images come from several institutions and the equipment varies, so the dimensions aren't uniform. Widths and heights range across a few hundred pixels and aspect ratios cluster near 1.0 with some spread. Some files are marked `_downsampled`, meaning lower-resolution versions that exist alongside the originals. Resizing to a fixed input size is mandatory.
 
-### 1.4 Image Characteristics
+Per-class RGB statistics also vary in expected ways: VASC has noticeably higher red (vascular lesions are reddish), MEL trends darker, NV and BKL are brighter on average. None of this is dramatic, but it confirms there's signal in color.
 
-**Dimensions:**
-- Images are not uniform in size — they come from multiple dermatology centers with different equipment
-- Widths and heights vary significantly across the dataset
-- Aspect ratios cluster near 1.0 (roughly square) but with noticeable variance
-- Some images are marked `_downsampled`, indicating lower resolution versions exist alongside originals
+### What this implies for training
 
-**Pixel Intensity (RGB):**
-- Mean pixel intensity is broadly similar across classes (~0.55–0.70 range normalized 0–1)
-- Skin-tone background gives all classes a warm red/green dominance over blue
-- VASC lesions show noticeably higher red-channel intensity (vascular = reddish lesions)
-- MEL tends toward darker overall intensity reflecting darker pigmentation
-- NV and BKL show higher brightness indicating lighter-toned lesions on average
+A few things follow from the above:
 
----
+- We can't rely on accuracy. We'll track balanced accuracy and per-class F1.
+- DF and VASC are tiny. Aggressive augmentation and possibly oversampling will be needed for them.
+- Resize is non-negotiable. We'll match whatever resolution our backbone expects (224 or 300).
+- ImageNet normalization is appropriate since we're going to use a pretrained backbone.
+- Splits must be stratified by class — random splits could easily under-represent DF or VASC in val/test.
+- Age and site look like they'd be useful auxiliary features; we'll plumb them through but the first model won't depend on them.
 
-### 1.5 Key Takeaways
+## Part 2 — Preprocessing plan
 
-| Finding | Implication |
-|---------|-------------|
-| 51% NV, ~54x imbalance ratio | Must use weighted loss or focal loss; naive accuracy is meaningless |
-| DF (239) and VASC (253) are very small minority classes | Aggressive augmentation and/or oversampling essential for these classes |
-| Images are variable in size and resolution | Resizing to uniform dimensions is mandatory before training |
-| RGB intensity varies by class | Per-channel normalization required; ImageNet statistics suitable for transfer learning |
-| Age correlates with certain disease types | Age is a useful auxiliary feature, especially for BCC, AK, SCC |
-| Anatomical site has class-specific patterns | Site can serve as a useful categorical auxiliary feature |
-| ~few percent of metadata is missing | Imputation or masking strategy needed for metadata fields |
-| Stratified split is critical | Random splits risk underrepresenting minority classes in val/test |
+This was the plan we wrote before training. The actual implementation in `src/dataset.py` and `src/transforms.py` follows it but tweaked a few things (300×300 instead of 224×224, an 80/10/10 split instead of 70/15/15) once we settled on EfficientNet-B3 as the primary backbone.
 
----
+### Step 1 — Labels
 
-## Part 2 — Data Preprocessing Steps
+Drop the `UNK` column from the ground truth CSV (samples without a confirmed label). Convert the remaining one-hot columns into a single integer class index for use with `nn.CrossEntropyLoss`. Merge the metadata CSV on the `image` key. Walk the disk once to confirm every CSV row has a corresponding `.jpg`; any missing files get logged and excluded.
 
-### Step 1: Data Loading & Label Preparation
+### Step 2 — Stratified split
 
-- Load `ISIC_2019_Training_GroundTruth.csv` and drop the `UNK` column (samples with no confirmed label)
-- Convert one-hot encoded columns to a single integer class label for use with standard loss functions
-- Load `ISIC_2019_Training_Metadata.csv` and merge on the `image` key
-- Verify that every CSV entry has a corresponding `.jpg` file on disk; log and exclude any missing files
+Original plan was 70/15/15; we ended up using 80/10/10 because we wanted a larger training set and we already had W&B for picking the best epoch. Either way the split is stratified on the class label, with a fixed seed. No augmentation on val or test.
 
-### Step 2: Stratified Train / Validation / Test Split
+### Step 3 — Resize
 
-- Split the dataset **70% train / 15% validation / 15% test** using stratified sampling on the class label
-- Stratification ensures all 8 classes — especially DF (239) and VASC (253) — are proportionally represented in every split
-- Fix a random seed for reproducibility
-- Do not apply any augmentation to the validation or test sets
+Resize every image to a fixed square. The plan was 224×224 (the ImageNet standard), but EfficientNet-B3's native input is 300, so we moved to 300×300 once the backbone was picked. PIL or `torchvision.transforms.Resize` with bilinear interpolation, no fancy aspect-ratio preservation.
 
-### Step 3: Image Resizing
+### Step 4 — Normalize
 
-- Resize all images to a uniform spatial resolution
-  - **224×224** for EfficientNet, ResNet, DenseNet (ImageNet standard)
-  - Use `PIL` or `torchvision.transforms.Resize` with `BILINEAR` interpolation
-- Maintain aspect ratio by center-cropping after resize if needed, or use direct resize
+Float32 in [0, 1], then ImageNet mean/std:
 
-### Step 4: Pixel Normalization
+```
+mean = [0.485, 0.456, 0.406]
+std  = [0.229, 0.224, 0.225]
+```
 
-- Convert pixel values from `[0, 255]` integer to `[0.0, 1.0]` float
-- Apply **ImageNet normalization** for transfer learning models:
-  - Mean: `[0.485, 0.456, 0.406]`
-  - Std: `[0.229, 0.224, 0.225]`
-- This aligns input distribution with what EfficientNet/ResNet/DenseNet were pretrained on
+This matches what EfficientNet was pretrained on. Skin images are red-heavy compared to ImageNet, so the post-normalization mean isn't perfectly zero, but that's fine.
 
-### Step 5: Data Augmentation (Training Set Only)
+### Step 5 — Augmentation (training only)
 
-Apply the following transforms to the **training set only** to increase effective dataset size and reduce overfitting, with heavier augmentation for minority classes:
+We'll use Albumentations. Heavier augmentation for minority classes is worth trying.
 
-| Transform | Purpose |
-|-----------|---------|
-| Random horizontal flip (p=0.5) | Lesions have no inherent left/right orientation |
-| Random vertical flip (p=0.5) | Dermoscopic images have no fixed orientation |
-| Random rotation (±30°) | Rotation invariance for skin lesion appearance |
-| Color jitter (brightness, contrast, saturation, hue) | Simulate different lighting and device variation |
-| Random zoom / random resized crop | Scale invariance |
-| Gaussian blur (p=0.2) | Simulate focus variation across imaging devices |
-| Elastic distortion (optional) | Simulate natural skin texture deformation |
+- Random horizontal flip, p=0.5
+- Random vertical flip, p=0.5
+- Random rotation up to ±30°
+- Color jitter (brightness, contrast, saturation, hue)
+- Random zoom / random resized crop
+- Gaussian blur, p=0.2 (simulates focus variation across devices)
+- Optional elastic distortion for very small classes
 
-For the most extreme minority classes (DF, VASC, SCC, AK), consider **oversampling** these classes in the DataLoader using `WeightedRandomSampler` to ensure each mini-batch sees a balanced representation.
+On top of the per-image transforms, a `WeightedRandomSampler` keyed off inverse class frequency would help DF/VASC/SCC/AK appear more often per epoch. This is a parameter we'll experiment with.
 
-### Step 6: Handling Class Imbalance
+### Step 6 — Class imbalance
 
-Two complementary strategies:
+Two complementary tools, and we expect to try both:
 
-**A. Weighted Loss Function**
-Compute inverse-frequency class weights and pass to `nn.CrossEntropyLoss(weight=...)`:
+**Weighted cross-entropy.** Inverse-frequency weights passed to `nn.CrossEntropyLoss(weight=...)`:
 
 ```python
-# Example (actual values computed from training split counts)
 total = sum(class_counts.values())
 class_weights = [total / (8 * class_counts[c]) for c in CLASSES]
 criterion = nn.CrossEntropyLoss(weight=torch.tensor(class_weights))
 ```
 
-Approximate weights based on full dataset:
+**Focal loss.** `FL(p_t) = -alpha_t * (1 - p_t)^gamma * log(p_t)`. Starting values: γ=2, α set to inverse class frequencies. Down-weights easy majority examples.
 
-| Class | Weight |
-|-------|--------|
-| NV | ~0.15 |
-| MEL | ~0.44 |
-| BCC | ~0.60 |
-| BKL | ~0.76 |
-| AK | ~2.29 |
-| SCC | ~3.17 |
-| VASC | ~7.87 |
-| DF | ~8.33 |
+A note we eventually had to internalize: focal loss and class weights both correct for imbalance, and stacking both is too aggressive — we found that out the hard way during Run 2.
 
-**B. Focal Loss (alternative)**
-Use focal loss to further down-weight easy majority-class examples and focus training on hard minority samples:
+### Step 7 — Metadata (optional auxiliary features)
 
-```
-FL(p_t) = -alpha_t * (1 - p_t)^gamma * log(p_t)
-```
+If we end up wanting these:
 
-Recommended starting values: `gamma=2`, `alpha` set to inverse class frequencies.
+- Age: impute missing values with the train-set median, scale to [0, 1].
+- Sex: one-hot (`male`, `female`, `unknown`).
+- Site: one-hot across the 6 site categories plus `unknown`.
 
-### Step 7: Metadata Handling (Optional Auxiliary Features)
+These would concatenate into the CNN's flattened feature vector before the classification head. We didn't end up using them in the final model — the image alone was sufficient.
 
-- **Age:** Impute missing values with the training set median; normalize to `[0, 1]`
-- **Sex:** One-hot encode (`male`, `female`, `unknown`)
-- **Anatomical site:** One-hot encode the 6 site categories; use an `unknown` category for missing values
-- Concatenate these features with the CNN's flattened representation before the final classification head
-
-### Step 8: DataLoader Setup
+### Step 8 — DataLoaders
 
 ```
-TrainLoader  → augmented images + class-weighted sampler, batch_size=32, shuffle=True
-ValLoader    → no augmentation, batch_size=64, shuffle=False
-TestLoader   → no augmentation, batch_size=64, shuffle=False
+train: augmented + WeightedRandomSampler, batch 32, shuffle=True
+val:   no aug, batch 64, shuffle=False
+test:  no aug, batch 64, shuffle=False
 ```
 
-- Use `num_workers=4` (or more depending on CPU) for parallel data loading
-- Pin memory (`pin_memory=True`) if training on GPU
+`num_workers=4` on Linux/Colab. On macOS we have to use `num_workers=0` because PyTorch multiprocessing on MPS spawns broken workers. `pin_memory=True` on GPU.
 
-### Step 9: Sanity Checks Before Training
+### Step 9 — Sanity checks before training
 
-- [ ] Verify class distribution in each split matches expected proportions
-- [ ] Confirm no image IDs overlap between train, val, and test
-- [ ] Visualize a batch of augmented training images to confirm transforms look correct
-- [ ] Check that mean/std of normalized pixel values are near zero-mean unit-variance
-- [ ] Confirm class weight tensor sums to number of classes (sanity check for weight computation)
-- [ ] Log total sample counts per class per split
+Before any training run we verify:
 
----
+- class proportions match across the splits
+- no image IDs overlap between train/val/test
+- a batch of augmented training images looks sane when visualized
+- normalized batch statistics are roughly zero-mean unit-variance
+- the class-weight tensor sums to the number of classes
+- per-class counts in each split are logged
 
-## Summary Checklist
+## Quick checklist
 
-```
-[ ] Drop UNK rows and convert one-hot labels to integers
-[ ] Merge ground truth with metadata CSV
-[ ] Stratified 70/15/15 train/val/test split (fixed seed)
-[ ] Resize all images to 224×224
-[ ] Normalize with ImageNet mean/std
-[ ] Apply augmentation to train set only
-[ ] Set up WeightedRandomSampler or compute class weights for loss
-[ ] Impute and encode metadata features (age, sex, site)
-[ ] Build DataLoaders with appropriate batch sizes
-[ ] Run sanity checks before kicking off training
-```
+- [ ] Drop UNK rows, convert one-hot to integer labels
+- [ ] Merge ground-truth and metadata CSVs
+- [ ] Stratified split with a fixed seed
+- [ ] Resize images to the backbone's native input size
+- [ ] ImageNet normalization
+- [ ] Train-only augmentation
+- [ ] Class weights and/or focal loss
+- [ ] Encode metadata if we want to use it
+- [ ] Build DataLoaders with the right `num_workers` for the platform
+- [ ] Run sanity checks before kicking off training

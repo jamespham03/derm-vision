@@ -1,140 +1,117 @@
-# Derm-Vision: Skin Lesion Classification
+# DermVision
 
-SJSU CMPE 258 Deep Learning Project: Skin Disease Classification System Using Deep Learning: A Multi-Class Approach
+Skin lesion classification for SJSU CMPE 258 (Deep Learning), spring 2026. Built by Lam Nguyen, James Pham, and Vi Thi Tuong Nguyen.
 
-## How to run web app
+We trained an EfficientNet-B3 on the ISIC 2019 dataset to classify dermoscopy images into 8 lesion categories, and wrapped it in a small web app where you can upload a photo and get a prediction back.
 
-**Requirements:** Python 3.9+, dependencies installed (`pip install -r requirements.txt`)
+## Running the web app
+
+You'll need Python 3.9+ and the dependencies in `requirements.txt`.
 
 ```bash
-# From the project root
+pip install -r requirements.txt
 python app/server.py
 ```
 
-Then open **http://localhost:8000** in your browser.
+Open <http://localhost:8000>. There are three pages:
 
-The server serves three pages:
-- `/` — Homepage (interactive skin lesion gallery)
-- `/analyze` — AI analysis tool (upload an image for classification)
-- `/about` — Project info, model details, and team
+- `/` — the homepage / gallery
+- `/analyze` — upload an image and run the model
+- `/about` — what the project is and who built it
 
-**Model checkpoint** (`outputs/checkpoints/efficientnet-b3_cardassian-spot-5/best_model-2.pth`) must be present for real predictions. Without it, the app runs in demo mode with simulated probabilities.
-
----
-
-## Overview
-
-Deep learning project for classifying dermoscopy images into 8 skin lesion categories using the ISIC 2019 dataset. The primary model uses EfficientNet-B3 with transfer learning, weighted cross-entropy loss for class imbalance, and Grad-CAM for interpretability.
+The app expects the trained checkpoint at `outputs/checkpoints/efficientnet-b3_cardassian-spot-5/best_model-2.pth`. If it's missing, the analyzer falls back to a demo mode that returns fake probabilities, which is useful when we just want to poke at the UI.
 
 ## Dataset
 
-**ISIC 2019 Challenge** - 25,331 dermoscopy images across 8 diagnostic categories:
+We used the ISIC 2019 Challenge training set: 25,331 dermoscopy images across 8 diagnostic classes.
 
-| Class | Description |
-|-------|-------------|
-| MEL | Melanoma |
-| NV | Melanocytic nevus |
-| BCC | Basal cell carcinoma |
-| AKIEC | Actinic keratosis / Bowen's disease |
-| BKL | Benign keratosis |
-| DF | Dermatofibroma |
-| VASC | Vascular lesion |
-| SCC | Squamous cell carcinoma |
+| Class | Disease |
+|-------|---------|
+| MEL   | Melanoma |
+| NV    | Melanocytic nevus |
+| BCC   | Basal cell carcinoma |
+| AKIEC | Actinic keratosis / Bowen's |
+| BKL   | Benign keratosis |
+| DF    | Dermatofibroma |
+| VASC  | Vascular lesion |
+| SCC   | Squamous cell carcinoma |
 
-The dataset exhibits significant class imbalance, addressed via weighted cross-entropy loss and data augmentation.
+The dataset is heavily imbalanced — NV alone is just over half of all images and DF/VASC each have under 260 samples. Most of our experimentation was about finding a loss function that doesn't either ignore the rare classes or overcorrect and trash performance on NV.
 
-## Project Structure
+## Repo layout
 
 ```
 derm-vision/
-├── configs/config.yaml          # Hyperparameters and paths
+├── configs/                # YAML training configs
 ├── data/
-│   ├── raw/                     # Original ISIC images and CSVs
-│   ├── processed/               # Preprocessed data
-│   └── splits/                  # Train/val/test CSV splits
+│   ├── raw/                # ISIC images + CSVs (not in repo)
+│   └── splits/             # 80/10/10 stratified split CSVs
 ├── src/
-│   ├── dataset.py               # PyTorch Dataset with metadata support
-│   ├── transforms.py            # Albumentations augmentation pipelines
-│   ├── train.py                 # Training loop with W&B logging
-│   ├── evaluate.py              # Metrics and confusion matrix
-│   ├── gradcam.py               # Grad-CAM visualization
+│   ├── dataset.py          # ISICDataset (PyTorch)
+│   ├── transforms.py       # Albumentations pipelines
+│   ├── train.py            # Training loop + W&B logging
+│   ├── evaluate.py         # Metrics and confusion matrix
+│   ├── gradcam.py          # Grad-CAM heatmaps
 │   └── models/
-│       ├── custom_cnn.py        # Baseline 4-layer CNN
-│       ├── efficientnet.py      # EfficientNet-B3 (primary backbone)
-│       └── ensemble.py          # Weighted averaging ensemble
-├── notebooks/
-│   ├── 01_eda.ipynb             # Exploratory data analysis
-│   └── 02_preprocessing.ipynb   # Augmentation pipeline demo
-├── app/app.py                   # Gradio web deployment stub
-├── outputs/
-│   ├── checkpoints/             # Saved model weights
-│   └── results/                 # Evaluation outputs
-└── requirements.txt
+│       ├── efficientnet.py # Primary backbone
+│       ├── custom_cnn.py   # 4-block CNN baseline
+│       └── ensemble.py     # Weighted softmax ensemble
+├── notebooks/              # EDA + preprocessing demos
+├── app/                    # Web app (Gradio + custom UI)
+└── outputs/
+    ├── checkpoints/        # Trained weights, one folder per W&B run
+    └── results/            # Confusion matrices, metric dumps
 ```
 
-## Approach
+## What's in the model
 
-- **Primary model**: EfficientNet-B3 with transfer learning (ImageNet pretrained)
-- **Training strategy**: Frozen backbone warmup followed by full fine-tuning with cosine annealing LR
-- **Class imbalance**: Weighted cross-entropy loss (inverse frequency weighting)
-- **Augmentation**: Flips, rotations, color jitter, coarse dropout via Albumentations
-- **Evaluation**: Balanced accuracy, weighted F1, per-class precision/recall, confusion matrix
-- **Interpretability**: Grad-CAM visualizations for model explanations
+EfficientNet-B3 with ImageNet pretrained weights, a `Dropout(0.3) → Linear(feature_dim → 8)` head, and focal loss with γ=2. The backbone stays frozen for the first 5 epochs while the head warms up, then we unfreeze and fine-tune the whole network with cosine-annealed learning rate. Augmentation is the usual flip/rotate/jitter set plus coarse dropout, all via Albumentations.
 
-## Team Roles
+For inference we use D4 test-time augmentation (8 flip/rotate variants, predictions averaged), which buys about 1.5 points of weighted F1 for free.
 
-| Member | Role |
-|--------|------|
-| **Lam** | Data pipeline (dataset loading, preprocessing, augmentation, splits) |
-| **James** | Model development (architecture selection, training, evaluation) |
-| **Vi** | Deployment (web app, Grad-CAM integration, demo preparation) |
+The full set of training experiments and ablations lives in [docs/report/experiments_report.md](docs/report/experiments_report.md).
 
 ## Setup
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/<your-org>/derm-vision.git
-   cd derm-vision
-   ```
+```bash
+git clone <this repo>
+cd derm-vision
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+```
 
-2. **Create a virtual environment**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/macOS
-   ```
+Drop the ISIC 2019 images and CSVs into `data/raw/`, then regenerate splits:
 
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+python scripts/create_splits.py
+```
 
-4. **Download the ISIC 2019 dataset** and place images + CSVs in `data/raw/`.
+Training expects W&B; either `wandb login` or set `WANDB_MODE=disabled`.
 
-5. **Configure Weights & Biases** (optional):
-   ```bash
-   wandb login
-   ```
+## Training and evaluation
 
-## Usage
-
-### Training
 ```bash
 python -m src.train --config configs/config.yaml
 ```
 
-### Evaluation
+This is the run that produced our best checkpoint (`cardassian-spot-5`). The CNN baseline uses `configs/config_cnn.yaml`.
+
+Quick eval from Python:
+
 ```python
 from src.evaluate import compute_metrics, plot_confusion_matrix
 metrics = compute_metrics(y_true, y_pred)
 plot_confusion_matrix(y_true, y_pred, save_path="outputs/results/cm.png")
 ```
 
-### Web App
-```bash
-cd app
-python app.py
-```
+## Team
+
+Lam handled the data pipeline (dataset class, augmentation, splits). James led model work — architecture, training runs, evaluation. Vi built the web app and Grad-CAM integration.
+
+## A note on Apple Silicon
+
+If you're on macOS with MPS, set `num_workers=0` in the DataLoader. PyTorch multiprocessing on Mac doesn't play nicely with MPS and you'll get spawn errors otherwise. If `albumentations` complains about NumPy, pin NumPy below 2.0.
 
 ## License
 
-This project is for academic/research purposes using the ISIC 2019 dataset.
+ISIC 2019 dataset is governed by its own license (see `data/raw/LICENSE.txt`). Project code is for academic and research use.
