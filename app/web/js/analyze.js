@@ -57,6 +57,14 @@ const diagAdvice     = document.getElementById("diag-advice");
 const adviceIcon     = document.getElementById("advice-icon");
 const breakdownRows  = document.getElementById("breakdown-rows");
 
+// Grad-CAM
+const gradcamCard    = document.getElementById("gradcam-card");
+const gradcamOriginal= document.getElementById("gradcam-original");
+const gradcamHeatmap = document.getElementById("gradcam-heatmap");
+const gradcamSpinner = document.getElementById("gradcam-spinner");
+const gradcamClass   = document.getElementById("gradcam-class");
+const gradcamCaption = document.getElementById("gradcam-caption");
+
 // ── Image handling ─────────────────────────────────────────────────────────
 function setImage(file) {
   if (!file || !file.type.startsWith("image/")) {
@@ -254,6 +262,9 @@ function showResults(data) {
     breakdownRows.appendChild(row);
   });
 
+  // Grad-CAM: show original immediately, fetch heatmap in background
+  loadGradcam(data);
+
   // Screen transition: results slides in from below, upload slides out upward
   const uploadScreen = document.getElementById("modal-screen-upload");
   const resultsScreen = document.getElementById("modal-screen-results");
@@ -268,6 +279,40 @@ function showResults(data) {
       setTimeout(() => { bar.style.width = bar.dataset.pct + "%"; }, i * 60);
     });
   }, 480);
+}
+
+async function loadGradcam(data) {
+  if (!currentFile || !gradcamCard) return;
+  gradcamCard.classList.remove("error");
+  gradcamCard.style.display = "";
+  gradcamSpinner.classList.remove("hidden");
+  gradcamSpinner.querySelector("span").textContent = "Generating heatmap…";
+  gradcamHeatmap.removeAttribute("src");
+  const origUrl = URL.createObjectURL(currentFile);
+  gradcamOriginal.onload = () => URL.revokeObjectURL(origUrl);
+  gradcamOriginal.src = origUrl;
+  gradcamClass.textContent = `${data.top_name} (${data.top_class})`;
+
+  if (data.demo_mode) {
+    gradcamCard.classList.add("error");
+    gradcamSpinner.querySelector("span").textContent =
+      "Grad-CAM unavailable in demo mode";
+    return;
+  }
+
+  try {
+    const form = new FormData();
+    form.append("file", currentFile);
+    const res = await fetch("/api/gradcam", { method: "POST", body: form });
+    if (!res.ok) throw new Error(await res.text());
+    const json = await res.json();
+    gradcamHeatmap.onload = () => gradcamSpinner.classList.add("hidden");
+    gradcamHeatmap.src = json.image;
+  } catch (err) {
+    gradcamCard.classList.add("error");
+    gradcamSpinner.querySelector("span").textContent =
+      "Heatmap unavailable";
+  }
 }
 
 backBtn.addEventListener("click", () => {

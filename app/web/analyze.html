@@ -293,6 +293,31 @@
                 </div>
               </div>
 
+              <div class="gradcam-card" id="gradcam-card">
+                <div class="gradcam-title">
+                  Model attention &nbsp;<span class="gradcam-subtitle">Grad-CAM</span>
+                  <div class="divider-line"></div>
+                </div>
+                <div class="gradcam-body">
+                  <div class="gradcam-image-wrap">
+                    <img id="gradcam-original" alt="Original image" />
+                    <div class="gradcam-image-label">Original</div>
+                  </div>
+                  <div class="gradcam-image-wrap">
+                    <img id="gradcam-heatmap" alt="Grad-CAM heatmap" />
+                    <div class="gradcam-image-label">Heatmap</div>
+                    <div class="gradcam-spinner" id="gradcam-spinner">
+                      <div class="spinner"></div>
+                      <span>Generating heatmap…</span>
+                    </div>
+                  </div>
+                </div>
+                <p class="gradcam-caption" id="gradcam-caption">
+                  Warmer regions show where the model focused when predicting
+                  <strong id="gradcam-class">—</strong>.
+                </p>
+              </div>
+
               <div class="breakdown-card">
                 <div class="breakdown-title">
                   Classification breakdown

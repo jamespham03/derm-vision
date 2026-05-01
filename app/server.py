@@ -6,7 +6,7 @@ Serves the web app (app/web/) and provides model inference API.
 Run: python app/server.py
   or: uvicorn app.server:app --reload --port 8000
 """
-import os, sys, io, random
+import os, sys, io, random, base64
 from pathlib import Path
 from contextlib import asynccontextmanager
 
@@ -26,6 +26,7 @@ import uvicorn
 from src.dataset import CLASS_NAMES
 from src.models.efficientnet import EfficientNetB3Classifier
 from src.transforms import get_val_transforms
+from src.gradcam import generate_gradcam
 
 # ── Globals ──────────────────────────────────────────────────────────────────
 MODEL = None
@@ -150,6 +151,46 @@ async def predict(file: UploadFile = File(...)):
                                "Appears likely benign. Continue monitoring for changes."),
         "demo_mode":          MODEL is None,
     })
+
+
+@app.post("/api/gradcam")
+async def gradcam(file: UploadFile = File(...), target_class: int = -1):
+    """Return a Grad-CAM heatmap overlay (PNG) for the uploaded image.
+
+    target_class: optional class index (0-7). -1 → use predicted class.
+    """
+    if MODEL is None:
+        raise HTTPException(503, "Model not loaded — Grad-CAM unavailable in demo mode")
+
+    content = await file.read()
+    try:
+        pil_image = Image.open(io.BytesIO(content)).convert("RGB")
+    except Exception:
+        raise HTTPException(400, "Invalid image file")
+
+    target = target_class if target_class >= 0 else None
+    target_layer = MODEL.backbone.conv_head
+
+    try:
+        overlay = generate_gradcam(
+            model=MODEL,
+            image_path=pil_image,
+            target_layer=target_layer,
+            image_size=IMAGE_SIZE,
+            target_class=target,
+            device=DEVICE,
+        )
+    except Exception as e:
+        raise HTTPException(500, f"Grad-CAM failed: {e}")
+    finally:
+        # generate_gradcam flips requires_grad=True on every param; restore eval state
+        for p in MODEL.parameters():
+            p.requires_grad = False
+
+    buf = io.BytesIO()
+    Image.fromarray(overlay).save(buf, format="PNG")
+    b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+    return JSONResponse({"image": f"data:image/png;base64,{b64}"})
 
 
 @app.get("/api/samples")
