@@ -18,7 +18,7 @@
     <span class="site-logo-name">DermVision</span>
     <span class="site-logo-badge">BETA</span>
   </a>
-  <a href="/analyze" class="site-cta-btn">LET'S ANALYZE</a>
+  <a href="/analyze" class="site-cta-btn" id="nav-analyze-btn">LET'S ANALYZE</a>
 </nav>
 <div class="site-tagline">
   <p>DermVision is a deep learning system classifying skin lesions across eight diagnostic categories using EfficientNet&#8209;B3.</p>
@@ -34,7 +34,15 @@
         <a href="/about"   class="phantom-sidenav-btn">About</a>
       </div>
       <div class="phantom-text-cols">
-        <h1 class="phantom-headline">ANALYZE YOUR<br>SKIN IMAGE.</h1>
+        <div class="phantom-headline-col">
+          <h1 class="phantom-headline">ANALYZE YOUR<br>SKIN IMAGE.</h1>
+          <button class="hero-analyze-btn" id="hero-analyze-btn">
+            Start analysis
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
         <p class="phantom-hero-desc">
           Upload a dermoscopy photo. Our EfficientNet&#8209;B3 model
           classifies it across eight lesion types in under a second.
@@ -45,156 +53,284 @@
 
   <div class="phantom-sep"></div>
 
-  <!-- ── Tool content ──────────────────────────────────────────────────── -->
-  <div class="phantom-content container">
+  <!-- ── Feature rows ──────────────────────────────────────────────────── -->
+  <div class="feature-rows container">
 
-    <!-- Step indicator -->
-    <div class="step-indicator">
-      <div class="step active" id="step-1">
-        <div class="step-circle">1</div>
-        <span class="step-label">Upload image</span>
+    <!-- Row 1 — Precision -->
+    <div class="feature-row">
+      <div class="feature-dot"></div>
+      <h2 class="feature-title">Precision</h2>
+      <div class="feature-body">
+        <div class="feature-focus">Our focus on — <em>accuracy and confidence</em></div>
+        <p class="feature-desc">EfficientNet-B3 trained on 25,331 ISIC 2019 dermoscopy images achieves 85% weighted F1. Every prediction surfaces per-class confidence scores so you can see exactly where the model is certain — and where it isn't.</p>
+        <p class="feature-desc">Balanced accuracy of 77.8% with test-time augmentation means real diagnostic signal even on rare lesion types that make up under 1% of the dataset.</p>
+        <a href="/about" class="feature-cta">View model details →</a>
       </div>
-      <div class="step-connector" id="step-connector"></div>
-      <div class="step inactive" id="step-2">
-        <div class="step-circle">2</div>
-        <span class="step-label">AI results</span>
+      <div class="feature-visual feature-visual--bars" aria-hidden="true">
+        <div class="fv-label">Weighted F1 by class</div>
+        <div class="fv-bars">
+          <div class="fv-bar-row"><span class="fv-cls">NV</span><div class="fv-track"><div class="fv-fill" style="width:91%;background:#1d9e75"></div></div><span class="fv-pct">0.91</span></div>
+          <div class="fv-bar-row"><span class="fv-cls">VASC</span><div class="fv-track"><div class="fv-fill" style="width:94%;background:#378add"></div></div><span class="fv-pct">0.94</span></div>
+          <div class="fv-bar-row"><span class="fv-cls">BCC</span><div class="fv-track"><div class="fv-fill" style="width:90%;background:#e24b4a"></div></div><span class="fv-pct">0.90</span></div>
+          <div class="fv-bar-row"><span class="fv-cls">MEL</span><div class="fv-track"><div class="fv-fill" style="width:77%;background:#e24b4a"></div></div><span class="fv-pct">0.77</span></div>
+          <div class="fv-bar-row"><span class="fv-cls">BKL</span><div class="fv-track"><div class="fv-fill" style="width:73%;background:#1d9e75"></div></div><span class="fv-pct">0.73</span></div>
+          <div class="fv-bar-row"><span class="fv-cls">SCC</span><div class="fv-track"><div class="fv-fill" style="width:72%;background:#e24b4a"></div></div><span class="fv-pct">0.72</span></div>
+          <div class="fv-bar-row"><span class="fv-cls">DF</span><div class="fv-track"><div class="fv-fill" style="width:67%;background:#1d9e75"></div></div><span class="fv-pct">0.67</span></div>
+          <div class="fv-bar-row"><span class="fv-cls">AKIEC</span><div class="fv-track"><div class="fv-fill" style="width:64%;background:#ef9f27"></div></div><span class="fv-pct">0.64</span></div>
+        </div>
       </div>
     </div>
 
-    <!-- ── Upload panel ─────────────────────────────────────────────── -->
-    <div class="upload-panel" id="upload-panel">
-
-      <div class="upload-section-label">
-        Skin image
-        <div class="divider-line"></div>
+    <!-- Row 2 — Explainability -->
+    <div class="feature-row">
+      <div class="feature-dot"></div>
+      <h2 class="feature-title">Explainability</h2>
+      <div class="feature-body">
+        <div class="feature-focus">Our focus on — <em>transparent AI decisions</em></div>
+        <p class="feature-desc">Grad-CAM heatmaps highlight the exact regions of your image that drove the model's prediction — not just a label, but a visual map of the evidence the network attended to.</p>
+        <p class="feature-desc">This lets clinicians and researchers validate the model's reasoning, catch shortcuts, and build trust in AI-assisted screening over time.</p>
+        <a href="/about#how" class="feature-cta">How it works →</a>
       </div>
-
-      <div class="upload-zone" id="upload-zone">
-        <input type="file" id="file-input" accept="image/*">
-        <div id="upload-default" class="upload-default-content" style="display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:none;">
-          <div class="upload-icon">
-            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-              <rect x="1" y="1" width="42" height="42" rx="12" stroke="currentColor" stroke-width="1.5" stroke-opacity=".25"/>
-              <path d="M22 28V16M16 22l6-6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".6"/>
-              <path d="M14 31h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-opacity=".3"/>
-            </svg>
-          </div>
-          <div>
-            <div class="upload-title">Drop your image here</div>
-            <div class="upload-sub">or use the buttons below</div>
-          </div>
-        </div>
-        <div class="upload-preview" id="upload-preview">
-          <img id="preview-img" alt="Preview">
-          <div class="upload-preview-overlay">
-            <button class="upload-preview-change" id="change-image-btn">Change image</button>
-          </div>
-        </div>
+      <div class="feature-visual feature-visual--heatmap" aria-hidden="true">
+        <div class="fv-heatmap-ring fv-ring-1"></div>
+        <div class="fv-heatmap-ring fv-ring-2"></div>
+        <div class="fv-heatmap-ring fv-ring-3"></div>
+        <div class="fv-heatmap-center"></div>
+        <div class="fv-heatmap-label">Grad-CAM</div>
       </div>
+    </div>
 
-      <div class="source-btns">
-        <button class="source-btn" id="btn-source-upload">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 2v8M4 6l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 11v1a2 2 0 002 2h8a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          Upload file
-        </button>
-        <button class="source-btn" id="btn-source-camera">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-            <circle cx="8" cy="8.5" r="2.2" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M6 3h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          Open camera
-        </button>
-        <button class="source-btn" id="btn-source-paste">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="5" y="2" width="8" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M3 4H2.5A1.5 1.5 0 001 5.5v8A1.5 1.5 0 002.5 15h7A1.5 1.5 0 0011 13.5V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          Paste image
-        </button>
+    <!-- Row 3 — Privacy -->
+    <div class="feature-row">
+      <div class="feature-dot"></div>
+      <h2 class="feature-title">Privacy</h2>
+      <div class="feature-body">
+        <div class="feature-focus">Our focus on — <em>responsible data handling</em></div>
+        <p class="feature-desc">Images are processed entirely within your browser session. Nothing is stored, logged, or retained after you close the page. No account, no upload history, no tracking.</p>
+        <p class="feature-desc">Analysis runs on our server during the request and the image is discarded immediately after prediction. Your health data stays yours.</p>
+        <a href="#" class="feature-cta">Read the disclaimer →</a>
       </div>
-
-      <div class="analyze-btn-wrap">
-        <button class="analyze-cta" id="analyze-btn" disabled>
-          <span id="analyze-btn-text">Analyze with AI &nbsp;→</span>
-        </button>
-      </div>
-
-      <div class="disclaimer">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:2px;">
-          <path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="var(--text-muted)" stroke-width="1.2" stroke-linejoin="round"/>
-          <path d="M7 6v2.5" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"/>
-          <circle cx="7" cy="10" r=".5" fill="var(--text-muted)"/>
+      <div class="feature-visual feature-visual--lock" aria-hidden="true">
+        <svg class="fv-lock-icon" width="52" height="52" viewBox="0 0 52 52" fill="none">
+          <rect x="8" y="22" width="36" height="26" rx="6" stroke="rgba(240,237,230,0.3)" stroke-width="1.5"/>
+          <path d="M16 22v-6a10 10 0 0120 0v6" stroke="rgba(240,237,230,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="26" cy="34" r="3" fill="rgba(240,237,230,0.25)"/>
+          <path d="M26 37v4" stroke="rgba(240,237,230,0.2)" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <span class="disclaimer-text">
-          <strong>Medical disclaimer:</strong> This tool is for educational and screening purposes only —
-          not medical advice, diagnosis, or treatment. Always consult a licensed dermatologist for any skin concerns.
-        </span>
+        <div class="fv-lock-label">Zero retention</div>
       </div>
+    </div>
 
-    </div><!-- #upload-panel -->
-
-    <!-- ── Results panel ────────────────────────────────────────────── -->
-    <div class="results-panel" id="results-panel">
-
-      <div class="demo-banner" id="demo-notice" style="display:none;">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;">
-          <path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="#c8820f" stroke-width="1.2" stroke-linejoin="round"/>
-          <path d="M7 6v2.5" stroke="#c8820f" stroke-width="1.2" stroke-linecap="round"/>
-          <circle cx="7" cy="10" r=".5" fill="#c8820f"/>
-        </svg>
-        <span><strong>Demo mode:</strong> No trained checkpoint found. Probabilities shown are simulated (equal weights).</span>
-      </div>
-
-      <div class="medical-warning">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;">
-          <path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="var(--text-muted)" stroke-width="1.2" stroke-linejoin="round"/>
-          <path d="M7 6v2.5" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"/>
-          <circle cx="7" cy="10" r=".5" fill="var(--text-muted)"/>
-        </svg>
-        <span><strong>Medical disclaimer:</strong> This tool is for educational and screening purposes only —
-        not medical advice, diagnosis, or treatment. Always consult a licensed dermatologist for any skin concerns.</span>
-      </div>
-
-      <div class="diagnosis-card" id="diagnosis-card">
-        <div class="diagnosis-header">
-          <div>
-            <div class="diag-label">Primary diagnosis</div>
-            <div class="diag-name" id="diag-name">—</div>
-            <div class="diag-meta" id="diag-meta"></div>
-          </div>
-          <span class="risk-badge" id="risk-badge">—</span>
-        </div>
-        <div class="diagnosis-desc" id="diag-desc"></div>
-        <div class="diagnosis-advice" id="diag-advice">
-          <div class="advice-icon" id="advice-icon">!</div>
-          <span class="advice-text" id="advice-text"></span>
-        </div>
-      </div>
-
-      <div class="breakdown-card">
-        <div class="breakdown-title">
-          Classification breakdown
-          <div class="divider-line"></div>
-        </div>
-        <div id="breakdown-rows"></div>
-      </div>
-
-      <button class="back-btn" id="back-btn">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M11 7H3M6.5 3.5L3 7l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Start new analysis
-      </button>
-
-    </div><!-- #results-panel -->
-
-  </div><!-- .phantom-content -->
+  </div><!-- .feature-rows -->
 
 </main>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ANALYZE MODAL
+     Two-screen frosted-glass overlay:
+       Screen 1 — upload  (starts visible, slides up on analyze)
+       Screen 2 — results (starts below, slides in on analyze, scrollable)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="analyze-modal" id="analyze-modal" role="dialog" aria-modal="true" aria-label="Analyze your skin image">
+
+  <!-- ── Fixed overlay controls (siblings of panel — no transform context) ── -->
+
+  <!-- Close × — top right -->
+  <button class="modal-close-btn" id="modal-close-btn" aria-label="Close">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <!-- Medical Disclaimer link — bottom left, matches "Privacy Policy" style -->
+  <button class="modal-disclaimer-btn" id="modal-disclaimer-btn">Medical Disclaimer</button>
+
+  <!-- ── Full-viewport screens container ── -->
+  <div class="analyze-modal-panel" id="analyze-modal-panel">
+    <div class="modal-screens" id="modal-screens">
+
+      <!-- ── Screen 1: Upload ────────────────────────────────────────── -->
+      <div class="modal-screen modal-screen--upload" id="modal-screen-upload">
+        <div class="modal-screen-inner">
+
+          <div class="modal-eyebrow">LET'S ANALYZE</div>
+          <h2 class="modal-title">Upload your skin image.</h2>
+
+          <!-- Step indicator -->
+          <div class="step-indicator">
+            <div class="step active" id="step-1">
+              <div class="step-circle">1</div>
+              <span class="step-label">Upload image</span>
+            </div>
+            <div class="step-connector" id="step-connector"></div>
+            <div class="step inactive" id="step-2">
+              <div class="step-circle">2</div>
+              <span class="step-label">AI results</span>
+            </div>
+          </div>
+
+          <!-- Upload panel -->
+          <div class="upload-panel" id="upload-panel">
+
+            <!-- Source cards -->
+            <div class="modal-source-grid">
+              <button class="modal-source-card" id="btn-source-upload">
+                <div class="msc-tag">File</div>
+                <div class="msc-desc">Upload a JPEG or PNG from your device</div>
+                <div class="msc-arrow">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </button>
+              <button class="modal-source-card" id="btn-source-camera">
+                <div class="msc-tag">Camera</div>
+                <div class="msc-desc">Capture directly from your device camera</div>
+                <div class="msc-arrow">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </button>
+              <button class="modal-source-card" id="btn-source-paste">
+                <div class="msc-tag">Clipboard</div>
+                <div class="msc-desc">Paste an image you've already copied</div>
+                <div class="msc-arrow">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </button>
+            </div>
+
+            <div class="upload-section-label">
+              Skin image
+              <div class="divider-line"></div>
+            </div>
+
+            <div class="upload-zone" id="upload-zone">
+              <input type="file" id="file-input" accept="image/*">
+              <div id="upload-default" class="upload-default-content" style="display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:none;">
+                <div class="upload-icon">
+                  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                    <rect x="1" y="1" width="42" height="42" rx="12" stroke="currentColor" stroke-width="1.5" stroke-opacity=".25"/>
+                    <path d="M22 28V16M16 22l6-6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".6"/>
+                    <path d="M14 31h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-opacity=".3"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="upload-title">Drop your image here</div>
+                  <div class="upload-sub">or use the buttons above</div>
+                </div>
+              </div>
+              <div class="upload-preview" id="upload-preview">
+                <img id="preview-img" alt="Preview">
+                <div class="upload-preview-overlay">
+                  <button class="upload-preview-change" id="change-image-btn">Change image</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="analyze-btn-wrap">
+              <button class="analyze-cta" id="analyze-btn" disabled>
+                <span id="analyze-btn-text">Analyze with AI &nbsp;→</span>
+              </button>
+            </div>
+
+          </div><!-- #upload-panel -->
+
+        </div><!-- .modal-screen-inner -->
+      </div><!-- #modal-screen-upload -->
+
+      <!-- ── Screen 2: Results ───────────────────────────────────────── -->
+      <div class="modal-screen modal-screen--results" id="modal-screen-results">
+        <div class="modal-results-inner">
+
+          <!-- Left column: up arrow (matches screenshot 2 layout — arrow beside glass container) -->
+          <div class="modal-results-left">
+            <button class="modal-up-arrow" id="modal-up-arrow" aria-label="Back to upload">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 11V3M3 7l4-4 4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Right column: results panel directly (glass applied per-card) -->
+          <div class="results-panel" id="results-panel">
+
+              <div class="demo-banner" id="demo-notice" style="display:none;">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;">
+                  <path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="#c8820f" stroke-width="1.2" stroke-linejoin="round"/>
+                  <path d="M7 6v2.5" stroke="#c8820f" stroke-width="1.2" stroke-linecap="round"/>
+                  <circle cx="7" cy="10" r=".5" fill="#c8820f"/>
+                </svg>
+                <span><strong>Demo mode:</strong> No trained checkpoint found. Probabilities shown are simulated (equal weights).</span>
+              </div>
+
+              <div class="medical-warning">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;">
+                  <path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="var(--text-muted)" stroke-width="1.2" stroke-linejoin="round"/>
+                  <path d="M7 6v2.5" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"/>
+                  <circle cx="7" cy="10" r=".5" fill="var(--text-muted)"/>
+                </svg>
+                <span><strong>Medical disclaimer:</strong> This tool is for educational and screening purposes only —
+                not medical advice, diagnosis, or treatment. Always consult a licensed dermatologist for any skin concerns.</span>
+              </div>
+
+              <div class="diagnosis-card" id="diagnosis-card">
+                <div class="diagnosis-header">
+                  <div>
+                    <div class="diag-label">Primary diagnosis</div>
+                    <div class="diag-name" id="diag-name">—</div>
+                    <div class="diag-meta" id="diag-meta"></div>
+                  </div>
+                  <span class="risk-badge" id="risk-badge">—</span>
+                </div>
+                <div class="diagnosis-desc" id="diag-desc"></div>
+                <div class="diagnosis-advice" id="diag-advice">
+                  <div class="advice-icon" id="advice-icon">!</div>
+                  <span class="advice-text" id="advice-text"></span>
+                </div>
+              </div>
+
+              <div class="breakdown-card">
+                <div class="breakdown-title">
+                  Classification breakdown
+                  <div class="divider-line"></div>
+                </div>
+                <div id="breakdown-rows"></div>
+              </div>
+
+              <button class="back-btn" id="back-btn">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M11 7H3M6.5 3.5L3 7l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Start new analysis
+              </button>
+
+          </div><!-- #results-panel -->
+
+        </div><!-- .modal-results-inner -->
+      </div><!-- #modal-screen-results -->
+
+    </div><!-- .modal-screens -->
+  </div><!-- .analyze-modal-panel -->
+
+  <!-- ── Disclaimer bottom sheet ────────────────────────────────────── -->
+  <div class="modal-disclaimer-sheet" id="modal-disclaimer-sheet" role="dialog" aria-label="Medical Disclaimer">
+    <div class="modal-disclaimer-handle"></div>
+    <h4 class="modal-disclaimer-heading">Medical Disclaimer</h4>
+    <p class="modal-disclaimer-body">
+      This tool is for educational and screening purposes only. It is <strong>not</strong> a substitute for
+      professional medical advice, diagnosis, or treatment. The AI classifications provided are based on pattern
+      recognition and may not reflect actual clinical diagnosis. Always consult a licensed dermatologist or
+      qualified healthcare professional for any skin concerns. Do not delay or disregard medical advice based
+      on the output of this tool.
+    </p>
+    <button class="modal-disclaimer-close" id="modal-disclaimer-close">Got it</button>
+  </div>
+
+</div><!-- #analyze-modal -->
 
 <!-- ── Camera modal ────────────────────────────────────────────────────── -->
 <div class="camera-modal" id="camera-modal">
@@ -233,8 +369,78 @@
 
 <script src="/js/analyze.js"></script>
 <script>
+  // Camera cancel button
   document.getElementById("close-camera-cancel").addEventListener("click", () => {
     document.getElementById("close-camera").click();
+  });
+
+  // ── Analyze Modal open / close ─────────────────────────────────────────
+  const analyzeModal   = document.getElementById("analyze-modal");
+  const modalPanel     = document.getElementById("analyze-modal-panel");
+  const modalCloseBtn  = document.getElementById("modal-close-btn");
+  const navAnalyzeBtn  = document.getElementById("nav-analyze-btn");
+  const heroAnalyzeBtn = document.getElementById("hero-analyze-btn");
+
+  function openAnalyzeModal(e) {
+    if (e) e.preventDefault();
+    analyzeModal.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeAnalyzeModal() {
+    analyzeModal.classList.remove("open");
+    document.body.style.overflow = "";
+    // Reset screens if on results
+    const rs = document.getElementById("modal-screen-results");
+    const us = document.getElementById("modal-screen-upload");
+    const ua = document.getElementById("modal-up-arrow");
+    if (rs) { rs.classList.remove("slide-in"); rs.scrollTop = 0; }
+    if (us) us.classList.remove("slide-away");
+    if (ua) ua.classList.remove("visible");
+  }
+
+  navAnalyzeBtn.addEventListener("click",  openAnalyzeModal);
+  heroAnalyzeBtn.addEventListener("click", openAnalyzeModal);
+  modalCloseBtn.addEventListener("click",  closeAnalyzeModal);
+
+  // ESC to close
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && analyzeModal.classList.contains("open")) {
+      const sheet = document.getElementById("modal-disclaimer-sheet");
+      if (sheet && sheet.classList.contains("open")) {
+        sheet.classList.remove("open");
+      } else {
+        closeAnalyzeModal();
+      }
+    }
+  });
+
+  // ── Up arrow: back to upload screen ──────────────────────────────────
+  document.getElementById("modal-up-arrow").addEventListener("click", () => {
+    document.getElementById("back-btn").click();
+  });
+
+  // ── Medical Disclaimer bottom sheet ──────────────────────────────────
+  const disclaimerBtn   = document.getElementById("modal-disclaimer-btn");
+  const disclaimerSheet = document.getElementById("modal-disclaimer-sheet");
+  const disclaimerClose = document.getElementById("modal-disclaimer-close");
+
+  disclaimerBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    disclaimerSheet.classList.toggle("open");
+  });
+
+  disclaimerClose.addEventListener("click", () => {
+    disclaimerSheet.classList.remove("open");
+  });
+
+  // Click modal backdrop to close sheet (but not trigger modal close)
+  analyzeModal.addEventListener("click", (e) => {
+    if (disclaimerSheet.classList.contains("open") &&
+        !disclaimerSheet.contains(e.target) &&
+        e.target !== disclaimerBtn) {
+      disclaimerSheet.classList.remove("open");
+    }
   });
 </script>
 
