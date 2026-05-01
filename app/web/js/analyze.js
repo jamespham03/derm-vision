@@ -254,33 +254,31 @@ function showResults(data) {
     breakdownRows.appendChild(row);
   });
 
-  // Slide upload out, results in
-  uploadPanel.style.opacity = "0";
-  uploadPanel.style.transform = "translateY(-16px)";
-  uploadPanel.style.pointerEvents = "none";
+  // Screen transition: results slides in from below, upload slides out upward
+  const uploadScreen = document.getElementById("modal-screen-upload");
+  const resultsScreen = document.getElementById("modal-screen-results");
+  const upArrowBtn = document.getElementById("modal-up-arrow");
+  if (uploadScreen)  uploadScreen.classList.add("slide-away");
+  if (resultsScreen) resultsScreen.classList.add("slide-in");
+  if (upArrowBtn)    upArrowBtn.classList.add("visible");
+
+  // Animate bars after transition completes
   setTimeout(() => {
-    uploadPanel.style.display = "none";
-    resultsPanel.classList.add("visible");
-    // Animate bars after short delay
-    setTimeout(() => {
-      document.querySelectorAll(".bar-fill").forEach((bar, i) => {
-        setTimeout(() => {
-          bar.style.width = bar.dataset.pct + "%";
-        }, i * 60);
-      });
-    }, 100);
-  }, 200);
+    document.querySelectorAll(".bar-fill").forEach((bar, i) => {
+      setTimeout(() => { bar.style.width = bar.dataset.pct + "%"; }, i * 60);
+    });
+  }, 480);
 }
 
 backBtn.addEventListener("click", () => {
-  // Reset everything
-  resultsPanel.classList.remove("visible");
-  uploadPanel.style.display = "";
-  setTimeout(() => {
-    uploadPanel.style.opacity = "1";
-    uploadPanel.style.transform = "translateY(0)";
-    uploadPanel.style.pointerEvents = "";
-  }, 20);
+  const uploadScreen  = document.getElementById("modal-screen-upload");
+  const resultsScreen = document.getElementById("modal-screen-results");
+  const upArrowBtn    = document.getElementById("modal-up-arrow");
+  if (resultsScreen) resultsScreen.classList.remove("slide-in");
+  if (uploadScreen)  uploadScreen.classList.remove("slide-away");
+  if (upArrowBtn)    upArrowBtn.classList.remove("visible");
+  // Scroll results back to top for reuse
+  if (resultsScreen) resultsScreen.scrollTop = 0;
   step1.className = "step active";
   step1.querySelector(".step-circle").textContent = "1";
   step2.className = "step inactive";

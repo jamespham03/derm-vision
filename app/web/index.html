@@ -4,13 +4,20 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DermVision</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Unbounded:wght@300;400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Unbounded:wght@300;400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <style>
   *, *::before, *::after { margin:0;padding:0;box-sizing:border-box; }
   :root { --bg:#080808;--fg:#f0ede6;--pill-border:#2a2a2a;--mono:'Space Mono',monospace;--display:'Unbounded',sans-serif; }
   html,body { width:100%;height:100%;background:var(--bg);color:var(--fg);font-family:var(--mono);overflow:hidden;cursor:none; }
+  /* Restore normal cursor inside the modal */
+  .analyze-modal, .analyze-modal * { cursor: auto !important; }
+  .analyze-modal button, .analyze-modal a, .analyze-modal input, .analyze-modal label { cursor: pointer !important; }
+  .analyze-modal .upload-zone { cursor: pointer !important; }
+  /* Prevent styles.css from resetting the homepage layout */
+  body.homepage-page { background: var(--bg) !important; }
 
   /* ── Custom cursor ─────────────────────────────────────────────────────── */
   #cursor { position:fixed;top:0;left:0;width:10px;height:10px;background:var(--fg);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:width .2s,height .2s; }
@@ -67,7 +74,7 @@
     <span class="logo-name">DermVision</span>
     <span class="logo-badge">BETA</span>
   </a>
-  <a href="/analyze" class="cta-btn">LET'S ANALYZE</a>
+  <a href="#" class="cta-btn" id="home-analyze-btn">LET'S ANALYZE</a>
 </nav>
 
 <!-- ── Tagline (centred, phantom.land style) ──────────────────────────────── -->
@@ -99,6 +106,220 @@
 </div>
 
 <canvas id="c"></canvas>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ANALYZE MODAL — same structure as /analyze page, opened in-place
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="analyze-modal" id="analyze-modal" role="dialog" aria-modal="true" aria-label="Analyze your skin image">
+
+  <button class="modal-close-btn" id="modal-close-btn" aria-label="Close">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <button class="modal-disclaimer-btn" id="modal-disclaimer-btn">Medical Disclaimer</button>
+
+  <div class="analyze-modal-panel" id="analyze-modal-panel">
+    <div class="modal-screens" id="modal-screens">
+
+      <!-- Screen 1: Upload -->
+      <div class="modal-screen modal-screen--upload" id="modal-screen-upload">
+        <div class="modal-screen-inner">
+          <div class="modal-eyebrow">LET'S ANALYZE</div>
+          <h2 class="modal-title">Upload your skin image.</h2>
+          <div class="step-indicator">
+            <div class="step active" id="step-1">
+              <div class="step-circle">1</div>
+              <span class="step-label">Upload image</span>
+            </div>
+            <div class="step-connector" id="step-connector"></div>
+            <div class="step inactive" id="step-2">
+              <div class="step-circle">2</div>
+              <span class="step-label">AI results</span>
+            </div>
+          </div>
+          <div class="upload-panel" id="upload-panel">
+            <div class="modal-source-grid">
+              <button class="modal-source-card" id="btn-source-upload">
+                <div class="msc-tag">File</div>
+                <div class="msc-desc">Upload a JPEG or PNG from your device</div>
+                <div class="msc-arrow">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </button>
+              <button class="modal-source-card" id="btn-source-camera">
+                <div class="msc-tag">Camera</div>
+                <div class="msc-desc">Capture directly from your device camera</div>
+                <div class="msc-arrow">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </button>
+              <button class="modal-source-card" id="btn-source-paste">
+                <div class="msc-tag">Clipboard</div>
+                <div class="msc-desc">Paste an image you've already copied</div>
+                <div class="msc-arrow">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </button>
+            </div>
+            <div class="upload-section-label">Skin image<div class="divider-line"></div></div>
+            <div class="upload-zone" id="upload-zone">
+              <input type="file" id="file-input" accept="image/*">
+              <div id="upload-default" class="upload-default-content" style="display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:none;">
+                <div class="upload-icon">
+                  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                    <rect x="1" y="1" width="42" height="42" rx="12" stroke="currentColor" stroke-width="1.5" stroke-opacity=".25"/>
+                    <path d="M22 28V16M16 22l6-6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".6"/>
+                    <path d="M14 31h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-opacity=".3"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="upload-title">Drop your image here</div>
+                  <div class="upload-sub">or use the buttons above</div>
+                </div>
+              </div>
+              <div class="upload-preview" id="upload-preview">
+                <img id="preview-img" alt="Preview">
+                <div class="upload-preview-overlay">
+                  <button class="upload-preview-change" id="change-image-btn">Change image</button>
+                </div>
+              </div>
+            </div>
+            <div class="analyze-btn-wrap">
+              <button class="analyze-cta" id="analyze-btn" disabled>
+                <span id="analyze-btn-text">Analyze with AI &nbsp;→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen 2: Results -->
+      <div class="modal-screen modal-screen--results" id="modal-screen-results">
+        <div class="modal-results-inner">
+          <div class="modal-results-left">
+            <button class="modal-up-arrow" id="modal-up-arrow" aria-label="Back to upload">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 11V3M3 7l4-4 4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="results-panel" id="results-panel">
+            <div class="demo-banner" id="demo-notice" style="display:none;">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="#c8820f" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 6v2.5" stroke="#c8820f" stroke-width="1.2" stroke-linecap="round"/><circle cx="7" cy="10" r=".5" fill="#c8820f"/></svg>
+              <span><strong>Demo mode:</strong> No trained checkpoint found. Probabilities shown are simulated (equal weights).</span>
+            </div>
+            <div class="medical-warning">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M7 2L12.5 11.5H1.5L7 2Z" stroke="var(--text-muted)" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 6v2.5" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"/><circle cx="7" cy="10" r=".5" fill="var(--text-muted)"/></svg>
+              <span><strong>Medical disclaimer:</strong> This tool is for educational and screening purposes only — not medical advice, diagnosis, or treatment. Always consult a licensed dermatologist.</span>
+            </div>
+            <div class="diagnosis-card" id="diagnosis-card">
+              <div class="diagnosis-header">
+                <div>
+                  <div class="diag-label">Primary diagnosis</div>
+                  <div class="diag-name" id="diag-name">—</div>
+                  <div class="diag-meta" id="diag-meta"></div>
+                </div>
+                <span class="risk-badge" id="risk-badge">—</span>
+              </div>
+              <div class="diagnosis-desc" id="diag-desc"></div>
+              <div class="diagnosis-advice" id="diag-advice">
+                <div class="advice-icon" id="advice-icon">!</div>
+                <span class="advice-text" id="advice-text"></span>
+              </div>
+            </div>
+            <div class="breakdown-card">
+              <div class="breakdown-title">Classification breakdown<div class="divider-line"></div></div>
+              <div id="breakdown-rows"></div>
+            </div>
+            <button class="back-btn" id="back-btn">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 7H3M6.5 3.5L3 7l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Start new analysis
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Disclaimer bottom sheet -->
+  <div class="modal-disclaimer-sheet" id="modal-disclaimer-sheet">
+    <div class="modal-disclaimer-handle"></div>
+    <h4 class="modal-disclaimer-heading">Medical Disclaimer</h4>
+    <p class="modal-disclaimer-body">This tool is for educational and screening purposes only. It is <strong>not</strong> a substitute for professional medical advice, diagnosis, or treatment. Always consult a licensed dermatologist or qualified healthcare professional for any skin concerns.</p>
+    <button class="modal-disclaimer-close" id="modal-disclaimer-close">Got it</button>
+  </div>
+
+</div><!-- #analyze-modal -->
+
+<!-- Camera modal -->
+<div class="camera-modal" id="camera-modal">
+  <div class="camera-container">
+    <div class="camera-header">
+      <span class="camera-title">Take a photo</span>
+      <button class="camera-close" id="close-camera">×</button>
+    </div>
+    <video class="camera-video" id="camera-video" autoplay playsinline></video>
+    <div class="camera-footer">
+      <button class="btn btn-secondary" id="close-camera-cancel">Cancel</button>
+      <button class="btn btn-primary" id="capture-btn">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8.5" r="2.2" stroke="currentColor" stroke-width="1.5"/></svg>
+        Capture
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/analyze.js"></script>
+<script>
+  document.getElementById("close-camera-cancel").addEventListener("click", () => {
+    document.getElementById("close-camera").click();
+  });
+
+  const analyzeModal  = document.getElementById("analyze-modal");
+  const modalCloseBtn = document.getElementById("modal-close-btn");
+
+  function openAnalyzeModal(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    analyzeModal.classList.add("open");
+  }
+
+  function closeAnalyzeModal() {
+    analyzeModal.classList.remove("open");
+    const rs = document.getElementById("modal-screen-results");
+    const us = document.getElementById("modal-screen-upload");
+    const ua = document.getElementById("modal-up-arrow");
+    if (rs) { rs.classList.remove("slide-in"); rs.scrollTop = 0; }
+    if (us) us.classList.remove("slide-away");
+    if (ua) ua.classList.remove("visible");
+  }
+
+  document.getElementById("home-analyze-btn").addEventListener("click", openAnalyzeModal);
+  modalCloseBtn.addEventListener("click", closeAnalyzeModal);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && analyzeModal.classList.contains("open")) {
+      const sheet = document.getElementById("modal-disclaimer-sheet");
+      if (sheet && sheet.classList.contains("open")) sheet.classList.remove("open");
+      else closeAnalyzeModal();
+    }
+  });
+
+  document.getElementById("modal-up-arrow").addEventListener("click", () => {
+    document.getElementById("back-btn").click();
+  });
+
+  const disclaimerBtn   = document.getElementById("modal-disclaimer-btn");
+  const disclaimerSheet = document.getElementById("modal-disclaimer-sheet");
+  disclaimerBtn.addEventListener("click", (e) => { e.stopPropagation(); disclaimerSheet.classList.toggle("open"); });
+  document.getElementById("modal-disclaimer-close").addEventListener("click", () => disclaimerSheet.classList.remove("open"));
+  analyzeModal.addEventListener("click", (e) => {
+    if (disclaimerSheet.classList.contains("open") && !disclaimerSheet.contains(e.target) && e.target !== disclaimerBtn)
+      disclaimerSheet.classList.remove("open");
+  });
+</script>
 
 <script>
 /* ── Skin lesion data — 12 cards (4 cols × 3 rows) ──────────────────────── */
@@ -140,7 +361,7 @@ document.querySelectorAll('button,.hud-btn,.logo-wrap').forEach(el=>{
 
 /* ── Bottom nav navigation ──────────────────────────────────────────────── */
 document.getElementById('btn-home').addEventListener('click',  () => window.location.href='/');
-document.getElementById('btn-work').addEventListener('click',  () => window.location.href='/analyze');
+document.getElementById('btn-work').addEventListener('click',  () => openAnalyzeModal());
 document.getElementById('btn-about').addEventListener('click', () => window.location.href='/about');
 
 // THREE SETUP
@@ -343,13 +564,13 @@ document.addEventListener('mousemove',e=>{
   }
 });
 
-// Click card → analyze (only if not dragging)
+// Click card → open analyze modal (only if not dragging)
 let dragDist=0;
 canvas.addEventListener('click', e => {
   if(dragDist > 4) return;
   const nm=new THREE.Vector2((e.clientX/W())*2-1,-(e.clientY/H())*2+1);
   const r=new THREE.Raycaster(); r.setFromCamera(nm,camera);
-  if(r.intersectObjects(cards.map(c=>c.mesh)).length) window.location.href='/analyze';
+  if(r.intersectObjects(cards.map(c=>c.mesh)).length) openAnalyzeModal();
 });
 
 function hexRgb(hex){ const n=parseInt(hex.slice(1),16); return {r:(n>>16)&255,g:(n>>8)&255,b:n&255}; }
