@@ -138,61 +138,6 @@ Full per-class metrics and confusion matrices are in [docs/report/experiments_re
 
 ---
 
-## Project Structure
-
-```
-derm-vision/
-|
-+-- notebooks/
-|   +-- eda.ipynb                       Exploratory data analysis
-|   +-- preprocessing.ipynb             Preprocessing and split generation
-|   +-- train_colab.ipynb               Colab training notebook
-|
-+-- src/
-|   +-- dataset.py                      ISICDataset (PyTorch Dataset)
-|   +-- transforms.py                   Albumentations train/val pipelines
-|   +-- train.py                        Training loop + W&B logging
-|   +-- evaluate.py                     Metrics + confusion matrix
-|   +-- gradcam.py                      Grad-CAM heatmap generation
-|   +-- models/
-|       +-- efficientnet.py             Main model (EfficientNet-B3)
-|       +-- custom_cnn.py               4-block CNN baseline
-|       +-- ensemble.py                 Weighted softmax ensemble
-|
-+-- app/
-|   +-- server.py                       Flask server entry point
-|   +-- app.py                          Gradio analyzer + inference
-|   +-- web/                            Custom HTML/CSS/JS frontend
-|       +-- index.html                  Homepage (Three.js grid)
-|       +-- analyze.html                Analyze page
-|       +-- about.html                  About page
-|       +-- css/styles.css              Styles
-|       +-- js/                         Three.js, analyze flow, modal
-|
-+-- configs/
-|   +-- config.yaml                     EfficientNet-B3 training config
-|   +-- config_cnn.yaml                 CNN baseline config
-|
-+-- data/
-|   +-- raw/                            ISIC 2019 images + CSVs (gitignored)
-|   +-- splits/                         80/10/10 stratified split CSVs
-|
-+-- outputs/
-|   +-- checkpoints/                    Trained weights
-|   +-- results/                        Confusion matrices + metrics
-|
-+-- docs/
-|   +-- proposal/                       Project proposal
-|   +-- report/                         Progress + experiments reports
-|
-+-- scripts/                            Split generation, helpers
-+-- presentation/                       Slides
-+-- requirements.txt                    Python dependencies
-+-- LICENSE
-```
-
----
-
 ## Methodology
 
 ### Dataset
@@ -360,20 +305,11 @@ AKIEC is our weakest class at F1 around 0.64. It is clinically similar to BCC an
 
 ## Future Work
 
-### Short term (1-2 weeks)
-- AKIEC-focused fine-tuning with oversampling
-- Error analysis using confusion matrix + Grad-CAM
-- Calibration check with reliability diagrams
+Next up: AKIEC-focused fine-tuning with oversampling, a systematic Grad-CAM error audit (we want to confirm the model is actually looking at lesions and not rulers or hair artifacts), and calibration checks with reliability diagrams.
 
-### Medium term (1-2 months)
-- Ensemble with ConvNeXt + ViT
-- Train at 380x380 resolution (EfficientNet-B3 native size)
-- Multi-crop TTA on top of D4
+After that: ensemble with ConvNeXt or ViT, training at 380×380 (EfficientNet-B3's native size), and multi-crop TTA stacked on D4.
 
-### Long term
-- Validation on HAM10000 or PH2 dataset
-- Lightweight mobile version using EfficientNet-B0 distillation
-- Evaluation with real dermatology feedback
+Longer term, we want to validate on an external dataset (HAM10000 or PH2) and build a lightweight mobile version via EfficientNet-B0 distillation.
 
 ---
 
@@ -400,7 +336,7 @@ If you are on macOS with MPS, set `num_workers=0` in the DataLoader. PyTorch mul
 
 ## Team
 
-- **Lam Nguyen** (SJSU ID: 018229432) -- Data pipeline: ISICDataset, Albumentations augmentation, stratified splits
+- **Lam Nguyen** -- Data pipeline: ISICDataset, Albumentations augmentation, stratified splits
 - **James Pham** -- Model development: architecture, training runs, evaluation, ablations
 - **Vi Thi Tuong Nguyen** -- Web app: frontend (Three.js homepage, analyze flow, about page) and Grad-CAM integration
 
